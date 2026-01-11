@@ -109,6 +109,7 @@ public class ChordDiscView extends View {
     private ChordType chordType = ChordType.HARMONIC; // Standard: Harmonisch
     private ScaleType scaleType = ScaleType.MAJOR; // Standard: Dur-Tonleiter
     private int highlightedNoteIndex = -1; // -1 = keine Hervorhebung
+    private boolean isTopDiscTransparent = false; // Transparenz der oberen Scheibe
 
     public ChordDiscView(Context context) {
         super(context);
@@ -133,6 +134,21 @@ public class ChordDiscView extends View {
     public void setScaleType(ScaleType type) {
         this.scaleType = type;
         // Bei Wechsel der Tonleiter muss die Scheibe neu gezeichnet werden (Löcher ändern sich)
+        invalidate();
+    }
+
+    /**
+     * Setzt die Transparenz der oberen Scheibe.
+     * @param transparent true = fast transparent, false = normal (deckend)
+     */
+    public void setTopDiscTransparent(boolean transparent) {
+        this.isTopDiscTransparent = transparent;
+        // Passe die Farbe der oberen Scheibe an
+        if (transparent) {
+            topDiscPaint.setColor(Color.parseColor("#30E8E8E8")); // 19% Alpha (30 in Hex)
+        } else {
+            topDiscPaint.setColor(Color.parseColor("#E8E8E8")); // Normal, deckend
+        }
         invalidate();
     }
 
@@ -323,7 +339,8 @@ public class ChordDiscView extends View {
 
     /**
      * Bestimmt ob an Position i ein Loch gezeichnet werden soll,
-     * basierend auf dem gewählten Tonleiter-Typ und der aktuellen Tonika.
+     * basierend auf dem gewählten Tonleiter-Typ.
+     * Die Löcher sind FEST wie die obere Scheibe, unabhängig von der Rotation!
      */
     private boolean shouldShowHole(int position) {
         // Bei Dur: Original-Löcher aus POSITIONS array
@@ -331,52 +348,30 @@ public class ChordDiscView extends View {
             return POSITIONS[position].hole;
         }
 
-        // Bei Moll: Berechne welche Noten in der Moll-Tonleiter sind
-        // Zuerst: Welche Note steht aktuell oben (= Tonika)?
-        float normalizedRotation = -bottomDiscRotation % 360;
-        if (normalizedRotation < 0) normalizedRotation += 360;
-        int tonikaIndex = Math.round(normalizedRotation / ANGLE_PER_POSITION) % 19;
-
-        // Tonleiter-Intervalle in Halbtönen
-        int[] halftonesInScale;
+        // Bei Moll: Feste Löcher für Moll-Tonleitern
+        // Diese Positionen entsprechen den Noten einer Moll-Tonleiter ausgehend von Position 0 (C)
+        // Wenn C-Moll bei C oben steht, zeigen die Löcher: C, D, Eb, F, G, Ab, Bb
 
         if (scaleType == ScaleType.NATURAL_MINOR) {
-            // Natürliches Moll: W-H-W-W-H-W-W (0, 2, 3, 5, 7, 8, 10, 12)
-            halftonesInScale = new int[]{0, 2, 3, 5, 7, 8, 10, 12};
-        } else { // HARMONIC_MINOR
-            // Harmonisches Moll: W-H-W-W-H-1.5-H (0, 2, 3, 5, 7, 8, 11, 12)
-            halftonesInScale = new int[]{0, 2, 3, 5, 7, 8, 11, 12};
-        }
-
-        // Mapping: Halbtöne → Array-Position-Offset
-        // Basierend auf dem 19-Positionen-Quintenzirkel
-        // 0=C, 3=D (+2 HT), 6=E (+4 HT), 8=F (+5 HT), 11=G (+7 HT), 14=A (+9 HT), 17=H (+11 HT)
-        int[] halftoneToPositionOffset = {
-            0,  // 0 HT: Tonika
-            2,  // 1 HT: (ungefähr, Position 1 oder 2)
-            3,  // 2 HT: D (Position +3 von C)
-            5,  // 3 HT: Eb (Position +5)
-            6,  // 4 HT: E (Position +6)
-            8,  // 5 HT: F (Position +8)
-            9,  // 6 HT: F# (Position +9)
-            11, // 7 HT: G (Position +11)
-            13, // 8 HT: Ab (Position +13)
-            14, // 9 HT: A (Position +14)
-            16, // 10 HT: B (Position +16)
-            17, // 11 HT: H (Position +17)
-            0   // 12 HT: Oktave
-        };
-
-        // Prüfe ob die aktuelle Position in der Tonleiter ist
-        for (int halftone : halftonesInScale) {
-            int positionOffset = halftoneToPositionOffset[halftone];
-            int notePosition = (tonikaIndex + positionOffset) % 19;
-            if (notePosition == position) {
-                return true;
+            // Natürliches Moll ausgehend von C (Position 0):
+            // C(0), D(3), Eb(5), F(8), G(11), Ab(13), Bb(16)
+            // 7 Noten + C oben = 8 Löcher
+            int[] naturalMinorHoles = {0, 3, 5, 8, 11, 13, 16};
+            for (int hole : naturalMinorHoles) {
+                if (position == hole) return true;
             }
-        }
+            return false;
 
-        return false;
+        } else { // HARMONIC_MINOR
+            // Harmonisches Moll ausgehend von C (Position 0):
+            // C(0), D(3), Eb(5), F(8), G(11), Ab(13), H(17)
+            // 7 Noten + C oben = 8 Löcher (H statt Bb!)
+            int[] harmonicMinorHoles = {0, 3, 5, 8, 11, 13, 17};
+            for (int hole : harmonicMinorHoles) {
+                if (position == hole) return true;
+            }
+            return false;
+        }
     }
 
     /**

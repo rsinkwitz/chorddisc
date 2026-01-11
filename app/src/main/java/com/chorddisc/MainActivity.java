@@ -6,6 +6,7 @@ import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -86,6 +87,12 @@ public class MainActivity extends AppCompatActivity {
         chordDiscView.setTapMode(ChordDiscView.TapMode.PLAY_CHORD);
         chordDiscView.setChordType(ChordDiscView.ChordType.HARMONIC);
         chordDiscView.setScaleType(ChordDiscView.ScaleType.MAJOR);
+
+        // Setup Toggle für Transparenz
+        SwitchCompat toggleTransparency = findViewById(R.id.toggleTransparency);
+        toggleTransparency.setOnCheckedChangeListener((buttonView, isChecked) ->
+            chordDiscView.setTopDiscTransparent(isChecked)
+        );
     }
 
     @Override
