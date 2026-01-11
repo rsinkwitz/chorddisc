@@ -1,5 +1,6 @@
 package com.chorddisc;
 
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -10,6 +11,7 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.DecelerateInterpolator;
 
 /**
  * Custom View für die interaktive Akkord-Scheibe.
@@ -71,6 +73,11 @@ public class ChordDiscView extends View {
     // Touch-Handling
     private float lastTouchAngle = 0f;
     private boolean isDragging = false;
+
+    // Snap-Animation
+    private ValueAnimator snapAnimator;
+    private static final float ANGLE_PER_POSITION = 360f / 19f; // 18.947°
+    private static final int SNAP_DURATION_MS = 500; // 0.5 Sekunden
 
     public ChordDiscView(Context context) {
         super(context);
@@ -337,6 +344,53 @@ public class ChordDiscView extends View {
         frameBitmap.recycle();
     }
 
+    /**
+     * Berechnet die nächste Snap-Position und animiert dorthin
+     */
+    private void snapToNearestPosition() {
+        // Stoppe laufende Animation
+        if (snapAnimator != null && snapAnimator.isRunning()) {
+            snapAnimator.cancel();
+        }
+
+        // Normalisiere aktuelle Rotation
+        float normalizedRotation = bottomDiscRotation % 360;
+        if (normalizedRotation < 0) normalizedRotation += 360;
+
+        // Finde nächste Snap-Position
+        float currentPositionFloat = normalizedRotation / ANGLE_PER_POSITION;
+        int nearestPosition = Math.round(currentPositionFloat);
+        float targetRotation = nearestPosition * ANGLE_PER_POSITION;
+
+        // Berechne kürzesten Weg zum Ziel
+        float deltaRotation = targetRotation - normalizedRotation;
+        if (deltaRotation > 180) deltaRotation -= 360;
+        if (deltaRotation < -180) deltaRotation += 360;
+
+        // Wenn bereits sehr nah, nicht animieren
+        if (Math.abs(deltaRotation) < 0.5f) {
+            bottomDiscRotation = targetRotation;
+            invalidate();
+            return;
+        }
+
+        // Erstelle Animation
+        final float startRotation = bottomDiscRotation;
+        final float endRotation = bottomDiscRotation + deltaRotation;
+
+        snapAnimator = ValueAnimator.ofFloat(0f, 1f);
+        snapAnimator.setDuration(SNAP_DURATION_MS);
+        snapAnimator.setInterpolator(new DecelerateInterpolator());
+
+        snapAnimator.addUpdateListener(animation -> {
+            float progress = (float) animation.getAnimatedValue();
+            bottomDiscRotation = startRotation + (endRotation - startRotation) * progress;
+            invalidate();
+        });
+
+        snapAnimator.start();
+    }
+
     @Override
     public boolean performClick() {
         super.performClick();
@@ -353,6 +407,10 @@ public class ChordDiscView extends View {
                 // Prüfe, ob Touch im drehbaren Bereich ist
                 float distance = (float) Math.sqrt(x * x + y * y);
                 if (distance < outerRadius && distance > innerRadius) {
+                    // Stoppe laufende Snap-Animation
+                    if (snapAnimator != null && snapAnimator.isRunning()) {
+                        snapAnimator.cancel();
+                    }
                     isDragging = true;
                     lastTouchAngle = (float) Math.toDegrees(Math.atan2(y, x));
                     return true;
@@ -380,6 +438,8 @@ public class ChordDiscView extends View {
             case MotionEvent.ACTION_CANCEL:
                 if (isDragging) {
                     performClick();
+                    // Starte Snap-Animation zur nächsten Position
+                    snapToNearestPosition();
                 }
                 isDragging = false;
                 break;

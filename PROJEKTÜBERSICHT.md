@@ -13,6 +13,7 @@ Eine **vollständige, lauffähige Android-App** mit allen gewünschten Funktione
 2. ✅ **Interaktive Steuerung**
    - Touch & Drag zum Drehen der unteren Scheibe
    - Flüssige, responsive Bewegung
+   - **Snap-Funktion**: Rastet automatisch auf nächster Position ein (0.5s Animation)
 
 3. ✅ **Aufrechte Textdarstellung** 🌟
    - Text dreht sich entgegen der Scheibendrehung
@@ -298,10 +299,10 @@ textPaint.setTextSize(outerRadius * 0.15f);  // Größer
 
 ### Neue Features hinzufügen:
 
-- **Snap-Funktion**: Einrasten auf Positionen
 - **Sound**: Töne abspielen beim Drehen
 - **Akkorde**: Anzeige der Hauptakkorde
 - **Themes**: Dunkelmodus
+- **Geschwindigkeit**: Anpassbare Snap-Dauer
 
 ---
 
