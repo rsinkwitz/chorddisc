@@ -75,7 +75,7 @@ public class ChordPlayer {
             audioFormat,
             bufferSize,
             AudioTrack.MODE_STREAM,
-            AudioTrack.PERFORMANCE_MODE_NONE // Kompatibel mit API 21
+            0 // Session ID = 0 (kompatibel mit API 21)
         );
     }
 
@@ -177,6 +177,90 @@ public class ChordPlayer {
             audioTrack.write(buffer, 0, buffer.length);
             audioTrack.stop();
         }
+    }
+
+    /**
+     * Spielt eine Tonleiter auf- und abwärts.
+     * @param rootIndex Index der Grundnote (0-18)
+     * @param scaleType Tonleiter-Typ (Dur, nat. Moll, harm. Moll)
+     * @param callback Wird für jeden gespielten Ton aufgerufen (für visuelle Hervorhebung)
+     */
+    public void playScale(int rootIndex, ScaleType scaleType, ScaleNoteCallback callback) {
+        if (isPlaying) {
+            return;
+        }
+
+        isPlaying = true;
+
+        // Bestimme Tonleiter-Intervalle (in Halbtönen)
+        int[] intervals;
+        switch (scaleType) {
+            case MAJOR:
+                intervals = new int[]{0, 2, 4, 5, 7, 9, 11, 12}; // Dur: W-W-H-W-W-W-H
+                break;
+            case NATURAL_MINOR:
+                intervals = new int[]{0, 2, 3, 5, 7, 8, 10, 12}; // Nat. Moll: W-H-W-W-H-W-W
+                break;
+            case HARMONIC_MINOR:
+                intervals = new int[]{0, 2, 3, 5, 7, 8, 11, 12}; // Harm. Moll: W-H-W-W-H-1.5-H
+                break;
+            default:
+                intervals = new int[]{0, 2, 4, 5, 7, 9, 11, 12};
+                break;
+        }
+
+        int root = getNoteFrequencyIndex(rootIndex);
+
+        new Thread(() -> {
+            // Aufwärts
+            for (int interval : intervals) {
+                int noteFreqIndex = root + interval;
+                if (callback != null) {
+                    handler.post(() -> callback.onNotePlay(rootIndex, interval));
+                }
+                playNote(noteFreqIndex, NOTE_DURATION_MS);
+            }
+
+            // Abwärts (ohne erste und letzte Note zu wiederholen)
+            for (int i = intervals.length - 2; i >= 1; i--) {
+                final int currentInterval = intervals[i];
+                int noteFreqIndex = root + currentInterval;
+                if (callback != null) {
+                    handler.post(() -> callback.onNotePlay(rootIndex, currentInterval));
+                }
+                playNote(noteFreqIndex, NOTE_DURATION_MS);
+            }
+
+            // Letzte Note (Grundton) länger
+            if (callback != null) {
+                handler.post(() -> callback.onNotePlay(rootIndex, 0));
+            }
+            playNote(root, NOTE_DURATION_LONG_MS);
+
+            // Hervorhebung zurücksetzen
+            if (callback != null) {
+                handler.post(() -> callback.onScaleFinished());
+            }
+
+            handler.post(() -> isPlaying = false);
+        }).start();
+    }
+
+    /**
+     * Interface für Tonleiter-Callback
+     */
+    public interface ScaleNoteCallback {
+        void onNotePlay(int rootIndex, int intervalInHalftones);
+        void onScaleFinished();
+    }
+
+    /**
+     * Enum für Tonleiter-Typen
+     */
+    public enum ScaleType {
+        MAJOR,
+        NATURAL_MINOR,
+        HARMONIC_MINOR
     }
 
     /**

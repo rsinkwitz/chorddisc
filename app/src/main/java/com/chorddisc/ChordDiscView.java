@@ -27,6 +27,20 @@ public class ChordDiscView extends View {
         ROTATE_TO_MOLL      // Rotiere zur Moll-Position (rot)
     }
 
+    // Akkord-Typen
+    public enum ChordType {
+        ALL_MAJOR,          // Alle Akkorde in Dur
+        ALL_MINOR,          // Alle Akkorde in Moll
+        HARMONIC            // Dur/Moll nach harmonischer Logik
+    }
+
+    // Tonleiter-Typen
+    public enum ScaleType {
+        MAJOR,              // Dur-Tonleiter
+        NATURAL_MINOR,      // Natürliches Moll
+        HARMONIC_MINOR      // Harmonisches Moll
+    }
+
     // Musikalische Daten - 19 Positionen im Quintenzirkel
     private static final MusicalPosition[] POSITIONS = {
         new MusicalPosition("C", true, "0"),
@@ -92,6 +106,9 @@ public class ChordDiscView extends View {
     // Audio & Modus
     private ChordPlayer chordPlayer;
     private TapMode tapMode = TapMode.ROTATE_TO_DUR; // Standard-Modus
+    private ChordType chordType = ChordType.HARMONIC; // Standard: Harmonisch
+    private ScaleType scaleType = ScaleType.MAJOR; // Standard: Dur-Tonleiter
+    private int highlightedNoteIndex = -1; // -1 = keine Hervorhebung
 
     public ChordDiscView(Context context) {
         super(context);
@@ -107,6 +124,30 @@ public class ChordDiscView extends View {
 
     public void setTapMode(TapMode mode) {
         this.tapMode = mode;
+    }
+
+    public void setChordType(ChordType type) {
+        this.chordType = type;
+    }
+
+    public void setScaleType(ScaleType type) {
+        this.scaleType = type;
+        // Bei Wechsel der Tonleiter muss die Scheibe neu gezeichnet werden (Löcher ändern sich)
+        invalidate();
+    }
+
+    /**
+     * Spielt die Tonleiter der aktuell oben stehenden Note (beim blauen Kreis).
+     * Wird vom Button aufgerufen.
+     */
+    public void playCurrentScale() {
+        // Berechne welche Note aktuell oben steht (Dur-Position = bei blauem Kreis)
+        float normalizedRotation = -bottomDiscRotation % 360;
+        if (normalizedRotation < 0) normalizedRotation += 360;
+        int currentNote = Math.round(normalizedRotation / ANGLE_PER_POSITION) % 19;
+
+        // Spiele Tonleiter dieser Note
+        playScaleForNote(currentNote);
     }
 
     private void initPaints() {
@@ -226,6 +267,15 @@ public class ChordDiscView extends View {
             // Kreis für die Note
             canvas.drawCircle(0, 0, noteCircleRadius, holePaint);
             canvas.drawCircle(0, 0, noteCircleRadius, circlePaint);
+
+            // Visuelle Hervorhebung für aktuell gespielte Note (Tonleiter-Modus)
+            if (i == highlightedNoteIndex) {
+                Paint highlightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                highlightPaint.setColor(Color.YELLOW);
+                highlightPaint.setStyle(Paint.Style.STROKE);
+                highlightPaint.setStrokeWidth(8f);
+                canvas.drawCircle(0, 0, noteCircleRadius * 1.3f, highlightPaint);
+            }
 
             // Text - rotiert zurück, damit er immer aufrecht steht
             canvas.save();
@@ -647,16 +697,103 @@ public class ChordDiscView extends View {
             return;
         }
 
-        // Berechne welche Note aktuell oben steht (Dur-Position = Tonika)
-        float normalizedRotation = -bottomDiscRotation % 360;
-        if (normalizedRotation < 0) normalizedRotation += 360;
-        int tonika = Math.round(normalizedRotation / ANGLE_PER_POSITION) % 19;
+        // Bestimme Akkord-Typ basierend auf Einstellung
+        boolean isMajor;
 
-        // Bestimme ob die getippte Note Dur oder Moll sein soll
-        boolean isMajor = shouldPlayMajorChord(noteIndex, tonika);
+        switch (chordType) {
+            case ALL_MAJOR:
+                isMajor = true; // Immer Dur
+                break;
+
+            case ALL_MINOR:
+                isMajor = false; // Immer Moll
+                break;
+
+            case HARMONIC:
+            default:
+                // Harmonische Logik: Berechne basierend auf Tonika
+                float normalizedRotation = -bottomDiscRotation % 360;
+                if (normalizedRotation < 0) normalizedRotation += 360;
+                int tonika = Math.round(normalizedRotation / ANGLE_PER_POSITION) % 19;
+                isMajor = shouldPlayMajorChord(noteIndex, tonika);
+                break;
+        }
 
         // Spiele den Akkord
         chordPlayer.playChord(noteIndex, isMajor);
+    }
+
+    /**
+     * Spielt die Tonleiter für die getippte Note mit visueller Hervorhebung.
+     */
+    private void playScaleForNote(int noteIndex) {
+        if (chordPlayer == null) {
+            return;
+        }
+
+        // Konvertiere ScaleType zu ChordPlayer.ScaleType
+        ChordPlayer.ScaleType playerScaleType;
+        switch (scaleType) {
+            case MAJOR:
+                playerScaleType = ChordPlayer.ScaleType.MAJOR;
+                break;
+            case NATURAL_MINOR:
+                playerScaleType = ChordPlayer.ScaleType.NATURAL_MINOR;
+                break;
+            case HARMONIC_MINOR:
+                playerScaleType = ChordPlayer.ScaleType.HARMONIC_MINOR;
+                break;
+            default:
+                playerScaleType = ChordPlayer.ScaleType.MAJOR;
+                break;
+        }
+
+        // Spiele Tonleiter mit Callback für visuelle Hervorhebung
+        chordPlayer.playScale(noteIndex, playerScaleType, new ChordPlayer.ScaleNoteCallback() {
+            @Override
+            public void onNotePlay(int rootIndex, int intervalInHalftones) {
+                // Berechne welche Note hervorgehoben werden soll
+                highlightedNoteIndex = calculateNoteIndexFromInterval(rootIndex, intervalInHalftones);
+                invalidate(); // Neu zeichnen
+            }
+
+            @Override
+            public void onScaleFinished() {
+                highlightedNoteIndex = -1;
+                invalidate();
+            }
+        });
+    }
+
+    /**
+     * Berechnet den Note-Index aus Grundton und Intervall in Halbtönen.
+     * Vereinfachte Version: Verwendet das 19-Noten-Array direkt.
+     */
+    private int calculateNoteIndexFromInterval(int rootIndex, int intervalInHalftones) {
+        // Mapping von Halbtönen zu Position-Offsets im 19er-Array
+        // Dies ist eine Annäherung für die visuelle Hervorhebung
+        int[] halftoneToPositionOffset = {
+            0,  // 0 Halbtöne = gleiche Note
+            2,  // 1 Halbton = +2 Positionen (ungefähr)
+            3,  // 2 Halbtöne = D
+            5,  // 3 Halbtöne = Eb
+            6,  // 4 Halbtöne = E
+            8,  // 5 Halbtöne = F
+            9,  // 6 Halbtöne = F#
+            11, // 7 Halbtöne = G
+            13, // 8 Halbtöne = Ab
+            14, // 9 Halbtöne = A
+            16, // 10 Halbtöne = B
+            17, // 11 Halbtöne = H
+            0   // 12 Halbtöne = Oktave (wieder bei Grundton)
+        };
+
+        if (intervalInHalftones < 0 || intervalInHalftones >= halftoneToPositionOffset.length) {
+            return rootIndex;
+        }
+
+        int positionOffset = halftoneToPositionOffset[intervalInHalftones];
+        return (rootIndex + positionOffset) % 19;
     }
 
     /**

@@ -13,10 +13,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="12dp"
+        android:padding="6dp"
         android:gravity="center"
-        android:background="@android:color/white"
-        android:elevation="4dp">
+        android:background="@android:color/white">
 
         <RadioButton
             android:id="@+id/radioPlayChord"
@@ -24,10 +23,10 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="🎵 Akkord"
-            android:textSize="12sp"
+            android:textSize="11sp"
             android:checked="true"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp" />
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp" />
 
         <RadioButton
             android:id="@+id/radioRotateToDur"
@@ -35,9 +34,9 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="🔵 Dur"
-            android:textSize="12sp"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp" />
+            android:textSize="11sp"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp" />
 
         <RadioButton
             android:id="@+id/radioRotateToMoll"
@@ -45,10 +44,109 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="🔴 Moll"
-            android:textSize="12sp"
-            android:paddingStart="4dp"
-            android:paddingEnd="4dp" />
+            android:textSize="11sp"
+            android:paddingStart="2dp"
+            android:paddingEnd="2dp" />
     </RadioGroup>
+
+    <!-- RadioGroup für Akkord-Typ -->
+    <RadioGroup
+        android:id="@+id/chordTypeRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="6dp"
+        android:gravity="center"
+        android:background="@android:color/white">
+
+        <RadioButton
+            android:id="@+id/radioAllMajor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Alles Dur"
+            android:textSize="10sp"
+            android:paddingStart="1dp"
+            android:paddingEnd="1dp" />
+
+        <RadioButton
+            android:id="@+id/radioAllMinor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Alles Moll"
+            android:textSize="10sp"
+            android:paddingStart="1dp"
+            android:paddingEnd="1dp" />
+
+        <RadioButton
+            android:id="@+id/radioHarmonic"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Harmonie"
+            android:textSize="10sp"
+            android:checked="true"
+            android:paddingStart="1dp"
+            android:paddingEnd="1dp" />
+    </RadioGroup>
+
+    <!-- RadioGroup für Tonleiter-Typ -->
+    <RadioGroup
+        android:id="@+id/scaleTypeRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="6dp"
+        android:gravity="center"
+        android:background="@android:color/white">
+
+        <RadioButton
+            android:id="@+id/radioMajorScale"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Dur-Tonleiter"
+            android:textSize="10sp"
+            android:checked="true"
+            android:paddingStart="1dp"
+            android:paddingEnd="1dp" />
+
+        <RadioButton
+            android:id="@+id/radioNaturalMinor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Nat. Moll"
+            android:textSize="10sp"
+            android:paddingStart="1dp"
+            android:paddingEnd="1dp" />
+
+        <RadioButton
+            android:id="@+id/radioHarmonicMinor"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Harm. Moll"
+            android:textSize="10sp"
+            android:paddingStart="1dp"
+            android:paddingEnd="1dp" />
+    </RadioGroup>
+
+    <!-- Button zum Abspielen der Tonleiter der aktuellen Note -->
+    <Button
+        android:id="@+id/buttonPlayScale"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="▶ Tonleiter abspielen"
+        android:textSize="14sp"
+        android:padding="10dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:textColor="@android:color/black" />
 
     <!-- ChordDiscView (wird programmatisch hinzugefügt) -->
     <FrameLayout

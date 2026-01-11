@@ -1,7 +1,9 @@
 package com.chorddisc;
 
 import android.os.Bundle;
+import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -25,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
         FrameLayout container = findViewById(R.id.chordDiscContainer);
         container.addView(chordDiscView);
 
-        // Setup RadioGroup
+        // Setup RadioGroup für Tap-Modi
         RadioGroup tapModeRadioGroup = findViewById(R.id.tapModeRadioGroup);
         tapModeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.radioPlayChord) {
@@ -37,8 +39,52 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Setze Standard-Modus
+        // Setup Button für Tonleiter abspielen
+        Button playScaleButton = findViewById(R.id.buttonPlayScale);
+        playScaleButton.setOnClickListener(v -> chordDiscView.playCurrentScale());
+
+        // Setup RadioGroup für Akkord-Typ
+        RadioGroup chordTypeRadioGroup = findViewById(R.id.chordTypeRadioGroup);
+        chordTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radioAllMajor) {
+                chordDiscView.setChordType(ChordDiscView.ChordType.ALL_MAJOR);
+            } else if (checkedId == R.id.radioAllMinor) {
+                chordDiscView.setChordType(ChordDiscView.ChordType.ALL_MINOR);
+            } else if (checkedId == R.id.radioHarmonic) {
+                chordDiscView.setChordType(ChordDiscView.ChordType.HARMONIC);
+            }
+        });
+
+        // Setup RadioGroup für Tonleiter-Typ
+        RadioGroup scaleTypeRadioGroup = findViewById(R.id.scaleTypeRadioGroup);
+        RadioButton harmonicButton = findViewById(R.id.radioHarmonic);
+
+        scaleTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radioMajorScale) {
+                chordDiscView.setScaleType(ChordDiscView.ScaleType.MAJOR);
+                // Harmonie nur bei Dur verfügbar
+                harmonicButton.setEnabled(true);
+            } else if (checkedId == R.id.radioNaturalMinor) {
+                chordDiscView.setScaleType(ChordDiscView.ScaleType.NATURAL_MINOR);
+                // Bei Moll: Harmonie deaktivieren
+                harmonicButton.setEnabled(false);
+                if (chordTypeRadioGroup.getCheckedRadioButtonId() == R.id.radioHarmonic) {
+                    chordTypeRadioGroup.check(R.id.radioAllMinor);
+                }
+            } else if (checkedId == R.id.radioHarmonicMinor) {
+                chordDiscView.setScaleType(ChordDiscView.ScaleType.HARMONIC_MINOR);
+                // Bei Moll: Harmonie deaktivieren
+                harmonicButton.setEnabled(false);
+                if (chordTypeRadioGroup.getCheckedRadioButtonId() == R.id.radioHarmonic) {
+                    chordTypeRadioGroup.check(R.id.radioAllMinor);
+                }
+            }
+        });
+
+        // Setze Standard-Modi
         chordDiscView.setTapMode(ChordDiscView.TapMode.PLAY_CHORD);
+        chordDiscView.setChordType(ChordDiscView.ChordType.HARMONIC);
+        chordDiscView.setScaleType(ChordDiscView.ScaleType.MAJOR);
     }
 
     @Override
