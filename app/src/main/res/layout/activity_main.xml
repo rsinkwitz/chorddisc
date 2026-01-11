@@ -108,21 +108,11 @@
             android:paddingEnd="2dp" />
 
         <RadioButton
-            android:id="@+id/radioRotateToDur"
+            android:id="@+id/radioRotateToTop"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/tap_rotate_to_dur"
-            android:textSize="11sp"
-            android:paddingStart="2dp"
-            android:paddingEnd="2dp" />
-
-        <RadioButton
-            android:id="@+id/radioRotateToMoll"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/tap_rotate_to_minor"
+            android:text="@string/tap_rotate_to_top"
             android:textSize="11sp"
             android:paddingStart="2dp"
             android:paddingEnd="2dp" />

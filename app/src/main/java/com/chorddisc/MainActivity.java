@@ -53,10 +53,8 @@ public class MainActivity extends AppCompatActivity {
         tapModeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.radioPlayChord) {
                 chordDiscView.setTapMode(ChordDiscView.TapMode.PLAY_CHORD);
-            } else if (checkedId == R.id.radioRotateToDur) {
-                chordDiscView.setTapMode(ChordDiscView.TapMode.ROTATE_TO_DUR);
-            } else if (checkedId == R.id.radioRotateToMoll) {
-                chordDiscView.setTapMode(ChordDiscView.TapMode.ROTATE_TO_MOLL);
+            } else if (checkedId == R.id.radioRotateToTop) {
+                chordDiscView.setTapMode(ChordDiscView.TapMode.ROTATE_TO_TOP);
             }
         });
 
@@ -184,11 +182,8 @@ public class MainActivity extends AppCompatActivity {
         RadioButton radioPlayChord = findViewById(R.id.radioPlayChord);
         radioPlayChord.setText(R.string.tap_play_chord);
 
-        RadioButton radioRotateToDur = findViewById(R.id.radioRotateToDur);
-        radioRotateToDur.setText(R.string.tap_rotate_to_dur);
-
-        RadioButton radioRotateToMoll = findViewById(R.id.radioRotateToMoll);
-        radioRotateToMoll.setText(R.string.tap_rotate_to_minor);
+        RadioButton radioRotateToTop = findViewById(R.id.radioRotateToTop);
+        radioRotateToTop.setText(R.string.tap_rotate_to_top);
 
         // RadioButtons - Chord Type
         RadioButton radioHarmonic = findViewById(R.id.radioHarmonic);

@@ -14,8 +14,7 @@
     <!-- Tap-Modi -->
     <string name="tap_mode_label">Bei Tippen:</string>
     <string name="tap_play_chord">▶ Akkord</string>
-    <string name="tap_rotate_to_dur">🔵 nach Dur</string>
-    <string name="tap_rotate_to_minor">🔴 nach Moll</string>
+    <string name="tap_rotate_to_top">🔵 nach oben</string>
 
     <!-- Akkord-Typen -->
     <string name="chord_type_label">Akkord in:</string>

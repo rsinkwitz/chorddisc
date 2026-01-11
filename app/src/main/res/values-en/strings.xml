@@ -14,8 +14,7 @@
     <!-- Tap Modes -->
     <string name="tap_mode_label">On tap:</string>
     <string name="tap_play_chord">▶ Chord</string>
-    <string name="tap_rotate_to_dur">🔵 to Major</string>
-    <string name="tap_rotate_to_minor">🔴 to Minor</string>
+    <string name="tap_rotate_to_top">🔵 to top</string>
 
     <!-- Chord Types -->
     <string name="chord_type_label">Chord in:</string>

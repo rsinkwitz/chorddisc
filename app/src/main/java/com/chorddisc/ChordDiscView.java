@@ -23,8 +23,7 @@ public class ChordDiscView extends View {
     // Tap-Modi
     public enum TapMode {
         PLAY_CHORD,         // Spiele Akkord
-        ROTATE_TO_DUR,      // Rotiere zur Dur-Position (blau)
-        ROTATE_TO_MOLL      // Rotiere zur Moll-Position (rot)
+        ROTATE_TO_TOP       // Rotiere zur Top-Position (blau, oben)
     }
 
     // Akkord-Typen
@@ -132,7 +131,7 @@ public class ChordDiscView extends View {
 
     // Audio & Modus
     private ChordPlayer chordPlayer;
-    private TapMode tapMode = TapMode.ROTATE_TO_DUR; // Standard-Modus
+    private TapMode tapMode = TapMode.PLAY_CHORD; // Standard-Modus
     private ChordType chordType = ChordType.HARMONIC; // Standard: Harmonisch
     private ScaleType scaleType = ScaleType.MAJOR; // Standard: Dur-Tonleiter
     private int highlightedNoteIndex = -1; // -1 = keine Hervorhebung
@@ -911,20 +910,8 @@ public class ChordDiscView extends View {
             case PLAY_CHORD:
                 playChordForNote(tappedNoteIndex);
                 break;
-            case ROTATE_TO_DUR:
+            case ROTATE_TO_TOP:
                 rotateToNote(tappedNoteIndex);
-                break;
-            case ROTATE_TO_MOLL:
-                // Der getippte Buchstabe soll zum roten Loch (Position 14 = A) rotieren
-                // Wenn tappedNoteIndex zur Position MINOR_POS (14) soll:
-                // Wir müssen Note X nach oben bringen, wobei X = (tappedNoteIndex - MINOR_POS)
-                // Beispiel: Tippe auf D (Position 3), soll zu Position 14
-                //           Also muss Note bei Position (3-14+19)%19 = 8 (F) nach oben
-                //           Dann steht D bei der roten Position 14
-
-                // Berechne welche Note nach oben muss, damit getippte Note bei MINOR_POS steht
-                int noteToRotateUp = (tappedNoteIndex - MINOR_POS + 19) % 19;
-                rotateToNote(noteToRotateUp);
                 break;
         }
     }
