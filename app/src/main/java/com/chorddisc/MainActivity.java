@@ -3,12 +3,17 @@ package com.chorddisc;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SwitchCompat;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
@@ -116,6 +121,10 @@ public class MainActivity extends AppCompatActivity {
             isEnglish = isChecked;
             setLocale(isChecked ? "en" : "de");
         });
+
+        // Setup Floating Action Button für Hilfe
+        FloatingActionButton fabHelp = findViewById(R.id.fabHelp);
+        fabHelp.setOnClickListener(v -> showHelpDialog());
     }
 
     /**
@@ -194,6 +203,38 @@ public class MainActivity extends AppCompatActivity {
 
         RadioButton radioAllMinor = findViewById(R.id.radioAllMinor);
         radioAllMinor.setText(R.string.chord_minor);
+    }
+
+    /**
+     * Zeigt den Hilfe-Dialog mit Copyright und Anleitung
+     */
+    private void showHelpDialog() {
+        // Erstelle ScrollView für scrollbaren Inhalt
+        ScrollView scrollView = new ScrollView(this);
+
+        // Erstelle TextView für HTML-Inhalt
+        TextView messageView = new TextView(this);
+        messageView.setPadding(60, 40, 60, 40);
+        messageView.setTextSize(14);
+
+        // Lade und parse HTML-String
+        String htmlMessage = getString(R.string.help_message);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            messageView.setText(Html.fromHtml(htmlMessage, Html.FROM_HTML_MODE_COMPACT));
+        } else {
+            messageView.setText(Html.fromHtml(htmlMessage));
+        }
+
+        messageView.setMovementMethod(LinkMovementMethod.getInstance());
+        scrollView.addView(messageView);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.help_title);
+        builder.setView(scrollView);
+        builder.setPositiveButton(R.string.help_close, (dialog, which) -> dialog.dismiss());
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     @Override

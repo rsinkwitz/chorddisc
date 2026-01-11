@@ -25,7 +25,29 @@
     <!-- Toggles -->
     <string name="toggle_transparency">Top disc transparent</string>
     <string name="toggle_language">🇩🇪 Sprache / Language 🇺🇸</string>
+
+    <!-- Help Dialog -->
+    <string name="menu_help">Help</string>
+    <string name="help_title">Help &amp; Info</string>
+    <string name="help_message">
+        <![CDATA[
+        <h3>Scales and Chords</h3>
+        <p><b>Rotate disc:</b> Drag the disc left or right with your finger.</p>
+        <p><b>Play scale:</b> Tap the central green play button.</p>
+        <p><b>Tap a note:</b>
+        <br/>• Mode "▶ Chord": Plays the chord of the tapped note
+        <br/>• Mode "🔵 to top": Rotates the note to the blue top position</p>
+        <p><b>Disc in:</b> Choose between Major, natural Minor or harmonic Minor.</p>
+        <p><b>Chord in:</b> Determines whether chords are played in Major, Minor or by Harmony.</p>
+        <br/>
+        <p><b>© 2026 Chord Disc App</b><br/>Version 1.0</p>
+        <p>Developed for learning scales and chords.</p>
+        ]]>
+    </string>
+    <string name="help_close">Close</string>
 </resources>
+
+
 
 
 

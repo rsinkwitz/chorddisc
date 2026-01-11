@@ -25,4 +25,24 @@
     <!-- Toggles -->
     <string name="toggle_transparency">Obere Scheibe transparent</string>
     <string name="toggle_language">🇩🇪 Sprache / Language 🇺🇸</string>
+
+    <!-- Hilfe-Dialog -->
+    <string name="menu_help">Hilfe</string>
+    <string name="help_title">Hilfe &amp; Info</string>
+    <string name="help_message">
+        <![CDATA[
+        <h3>Tonleitern und Akkorde</h3>
+        <p><b>Scheibe drehen:</b> Mit dem Finger die Scheibe nach links oder rechts drehen.</p>
+        <p><b>Tonleiter abspielen:</b> Zentralen grünen Play-Button tippen.</p>
+        <p><b>Note antippen:</b>
+        <br/>• Modus "▶ Akkord": Spielt den Akkord der getippten Note
+        <br/>• Modus "🔵 nach oben": Rotiert die Note zur blauen Top-Position</p>
+        <p><b>Scheibe in:</b> Wähle zwischen Dur, natürlichem Moll oder harmonischem Moll.</p>
+        <p><b>Akkord in:</b> Bestimmt, ob Akkorde in Dur, Moll oder nach Harmonie gespielt werden.</p>
+        <br/>
+        <p><b>© 2026 Chord Disc App</b><br/>Version 1.0</p>
+        <p>Entwickelt für das Erlernen von Tonleitern und Akkorden.</p>
+        ]]>
+    </string>
+    <string name="help_close">Schließen</string>
 </resources>
