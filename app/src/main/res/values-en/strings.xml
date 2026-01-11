@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Key Circle</string>
+
+    <!-- Title -->
+    <string name="title">Scales and Chords</string>
+
+    <!-- Scale Type -->
+    <string name="scale_type_label">Disc in:</string>
+    <string name="scale_major">Major</string>
+    <string name="scale_natural_minor">Nat. Minor</string>
+    <string name="scale_harmonic_minor">Harm. Minor</string>
+
+    <!-- Tap Modes -->
+    <string name="tap_mode_label">On tap:</string>
+    <string name="tap_play_chord">▶ Chord</string>
+    <string name="tap_rotate_to_dur">🔵 to Major</string>
+    <string name="tap_rotate_to_minor">🔴 to Minor</string>
+
+    <!-- Chord Types -->
+    <string name="chord_type_label">Chord in:</string>
+    <string name="chord_harmony">Harmony</string>
+    <string name="chord_major">Major</string>
+    <string name="chord_minor">Minor</string>
+
+    <!-- Toggles -->
+    <string name="toggle_transparency">Top disc transparent</string>
+    <string name="toggle_language">🇩🇪 Sprache / Language 🇺🇸</string>
+</resources>
+
+
+

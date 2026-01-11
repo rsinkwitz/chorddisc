@@ -1,4 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Tonarten-Scheibe</string>
+
+    <!-- Titel -->
+    <string name="title">Tonleitern und Akkorde</string>
+
+    <!-- Tonleiter-Typ -->
+    <string name="scale_type_label">Scheibe in:</string>
+    <string name="scale_major">Dur</string>
+    <string name="scale_natural_minor">Nat. Moll</string>
+    <string name="scale_harmonic_minor">Harm. Moll</string>
+
+    <!-- Tap-Modi -->
+    <string name="tap_mode_label">Bei Tippen:</string>
+    <string name="tap_play_chord">▶ Akkord</string>
+    <string name="tap_rotate_to_dur">🔵 nach Dur</string>
+    <string name="tap_rotate_to_minor">🔴 nach Moll</string>
+
+    <!-- Akkord-Typen -->
+    <string name="chord_type_label">Akkord in:</string>
+    <string name="chord_harmony">Harmonie</string>
+    <string name="chord_major">Dur</string>
+    <string name="chord_minor">Moll</string>
+
+    <!-- Toggles -->
+    <string name="toggle_transparency">Obere Scheibe transparent</string>
+    <string name="toggle_language">🇩🇪 Sprache / Language 🇺🇸</string>
 </resources>

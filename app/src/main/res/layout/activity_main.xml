@@ -9,9 +9,10 @@
 
     <!-- Titel -->
     <TextView
+        android:id="@+id/titleText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Tonleitern und Akkorde"
+        android:text="@string/title"
         android:textSize="18sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -21,9 +22,10 @@
 
     <!-- Label und RadioGroup für Tonleiter-Typ -->
     <TextView
+        android:id="@+id/scaleTypeLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Scheibe in:"
+        android:text="@string/scale_type_label"
         android:textSize="12sp"
         android:textStyle="bold"
         android:paddingStart="12dp"
@@ -45,7 +47,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Dur"
+            android:text="@string/scale_major"
             android:textSize="11sp"
             android:checked="true"
             android:paddingStart="2dp"
@@ -56,7 +58,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Nat. Moll"
+            android:text="@string/scale_natural_minor"
             android:textSize="11sp"
             android:paddingStart="2dp"
             android:paddingEnd="2dp" />
@@ -66,41 +68,18 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Harm. Moll"
+            android:text="@string/scale_harmonic_minor"
             android:textSize="11sp"
             android:paddingStart="2dp"
             android:paddingEnd="2dp" />
     </RadioGroup>
 
-    <!-- Toggle für Transparenz der oberen Scheibe -->
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:gravity="center_vertical"
-        android:background="@android:color/white">
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Obere Scheibe transparent:"
-            android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/toggleTransparency"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-    </LinearLayout>
-
-
     <!-- Label und RadioGroup für Tap-Modi -->
     <TextView
+        android:id="@+id/tapModeLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Bei Tippen:"
+        android:text="@string/tap_mode_label"
         android:textSize="12sp"
         android:textStyle="bold"
         android:paddingStart="12dp"
@@ -122,7 +101,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="▶ Akkord"
+            android:text="@string/tap_play_chord"
             android:textSize="11sp"
             android:checked="true"
             android:paddingStart="2dp"
@@ -133,7 +112,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="🔵 nach Dur"
+            android:text="@string/tap_rotate_to_dur"
             android:textSize="11sp"
             android:paddingStart="2dp"
             android:paddingEnd="2dp" />
@@ -143,7 +122,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="🔴 nach Moll"
+            android:text="@string/tap_rotate_to_minor"
             android:textSize="11sp"
             android:paddingStart="2dp"
             android:paddingEnd="2dp" />
@@ -151,9 +130,10 @@
 
     <!-- Label und RadioGroup für Akkord-Typ -->
     <TextView
+        android:id="@+id/chordTypeLabel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Akkord in:"
+        android:text="@string/chord_type_label"
         android:textSize="12sp"
         android:textStyle="bold"
         android:paddingStart="12dp"
@@ -175,7 +155,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Harmonie"
+            android:text="@string/chord_harmony"
             android:textSize="11sp"
             android:checked="true"
             android:paddingStart="2dp"
@@ -186,7 +166,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Dur"
+            android:text="@string/chord_major"
             android:textSize="11sp"
             android:paddingStart="2dp"
             android:paddingEnd="2dp" />
@@ -196,12 +176,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Moll"
+            android:text="@string/chord_minor"
             android:textSize="11sp"
             android:paddingStart="2dp"
             android:paddingEnd="2dp" />
     </RadioGroup>
-
 
     <!-- ChordDiscView (wird programmatisch hinzugefügt) -->
     <FrameLayout
@@ -209,6 +188,56 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
+
+    <!-- Toggle für Transparenz der oberen Scheibe -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="@android:color/white">
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/toggleTransparency"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/transparencyLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/toggle_transparency"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:paddingStart="8dp" />
+    </LinearLayout>
+
+    <!-- Toggle für Sprache -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="@android:color/white">
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/toggleLanguage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/languageLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/toggle_language"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:paddingStart="8dp" />
+    </LinearLayout>
 
 </LinearLayout>
 

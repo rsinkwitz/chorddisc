@@ -42,7 +42,8 @@ public class ChordDiscView extends View {
     }
 
     // Musikalische Daten - 19 Positionen im Quintenzirkel
-    private static final MusicalPosition[] POSITIONS = {
+    // DEUTSCHE Notation: B = Bb, H = B
+    private static final MusicalPosition[] POSITIONS_DE = {
         new MusicalPosition("C", true, "0"),
         new MusicalPosition("C♯", false, "7♯"),
         new MusicalPosition("D♭", false, "5♭"),
@@ -63,6 +64,32 @@ public class ChordDiscView extends View {
         new MusicalPosition("H", true, "5♯"),
         new MusicalPosition("H♯,C♭", false, "")
     };
+
+    // ENGLISCHE Notation: B = B (nicht Bb)
+    private static final MusicalPosition[] POSITIONS_EN = {
+        new MusicalPosition("C", true, "0"),
+        new MusicalPosition("C♯", false, "7♯"),
+        new MusicalPosition("D♭", false, "5♭"),
+        new MusicalPosition("D", true, "2♯"),
+        new MusicalPosition("D♯", false, ""),
+        new MusicalPosition("E♭", false, "3♭"),
+        new MusicalPosition("E", true, "4♯"),
+        new MusicalPosition("E♯,F♭", false, ""),
+        new MusicalPosition("F", true, "1♭"),
+        new MusicalPosition("F♯", false, "6♯"),
+        new MusicalPosition("G♭", false, ""),
+        new MusicalPosition("G", true, "1♯"),
+        new MusicalPosition("G♯", false, ""),
+        new MusicalPosition("A♭", false, "4♭"),
+        new MusicalPosition("A", true, "3♯"),
+        new MusicalPosition("A♯", false, ""),
+        new MusicalPosition("B♭", false, "2♭"),
+        new MusicalPosition("B", true, "5♯"),
+        new MusicalPosition("B♯,C♭", false, "")
+    };
+
+    // Aktuelle Notation (wird je nach Sprache gesetzt)
+    private static MusicalPosition[] POSITIONS = POSITIONS_EN; // Default: Englisch
 
     private static final int MAJOR_POS = 0;  // Position für Dur (blau)
     private static final int MINOR_POS = 14; // Position für Moll (rot)
@@ -135,6 +162,15 @@ public class ChordDiscView extends View {
         this.scaleType = type;
         // Bei Wechsel der Tonleiter muss die Scheibe neu gezeichnet werden (Löcher ändern sich)
         invalidate();
+    }
+
+    /**
+     * Setzt die Notennotation (Deutsch oder Englisch).
+     * @param useGermanNotation true = Deutsche Notation (B=Bb, H=B), false = Englische Notation (B=B)
+     */
+    public void setNotationLanguage(boolean useGermanNotation) {
+        POSITIONS = useGermanNotation ? POSITIONS_DE : POSITIONS_EN;
+        invalidate(); // Neu zeichnen mit neuer Notation
     }
 
     /**
