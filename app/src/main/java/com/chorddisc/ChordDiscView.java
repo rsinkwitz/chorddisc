@@ -137,9 +137,9 @@ public class ChordDiscView extends View {
         centerX = w / 2f;
         centerY = h / 2f;
 
-        // Verwende 80% der kleineren Dimension für den Radius
+        // Verwende 96% der kleineren Dimension für den Radius (volle Breite nutzen)
         float minDimension = Math.min(w, h);
-        outerRadius = minDimension * 0.4f;
+        outerRadius = minDimension * 0.48f;
         innerRadius = outerRadius * 0.05f;
         noteCircleRadius = outerRadius * 0.13f;
         notePositionRadius = outerRadius * 0.80f;
@@ -165,6 +165,9 @@ public class ChordDiscView extends View {
 
         // Zeichne obere (feste) Scheibe mit Löchern
         drawTopDisc(canvas);
+
+        // Zeichne opaken Rahmen um die Scheiben, um herausragende Texte zu verdecken
+        drawOpaqueFrame(canvas);
     }
 
     /**
@@ -199,15 +202,29 @@ public class ChordDiscView extends View {
             // Notenname
             canvas.drawText(POSITIONS[i].note, 0, textPaint.getTextSize() * 0.3f, textPaint);
 
-            // Kreuze/Bs - positioniert, damit sie vertikal mittig im Rechteck-Loch sind
-            if (!POSITIONS[i].sharpFlat.isEmpty()) {
-                canvas.drawText(POSITIONS[i].sharpFlat, 0,
-                    textPaint.getTextSize() * 0.3f + textPaintSmall.getTextSize() * 2.5f + indicatorSize * 0.1f,
-                    textPaintSmall);
-            }
+            canvas.restore();
+            canvas.restore();
+        }
 
-            canvas.restore();
-            canvas.restore();
+        canvas.restore();
+
+        // Zeichne Vorzeichen beim Indikator (oben, fest, nicht rotiert)
+        canvas.save();
+        canvas.translate(centerX, centerY);
+
+        // Berechne, welche Note beim Indikator steht (oben bei 0°)
+        float normalizedRotation = bottomDiscRotation % 360;
+        if (normalizedRotation < 0) normalizedRotation += 360;
+
+        // Finde die Note, die am nächsten bei 0° (oben) steht
+        float anglePerPosition = 360f / 19f;
+        int indicatorNoteIndex = Math.round(normalizedRotation / anglePerPosition) % 19;
+
+        // Zeichne Vorzeichen der aktuellen Note beim Indikator
+        if (!POSITIONS[indicatorNoteIndex].sharpFlat.isEmpty()) {
+            canvas.drawText(POSITIONS[indicatorNoteIndex].sharpFlat, 0,
+                -indicatorPositionRadius + indicatorSize * 0.1f,
+                textPaintSmall);
         }
 
         canvas.restore();
@@ -296,6 +313,28 @@ public class ChordDiscView extends View {
         canvas.drawRect(rect2, rectPaint);
 
         canvas.restore();
+    }
+
+    /**
+     * Zeichnet einen opaken Rahmen um die Scheiben, um herausragende Texte zu verdecken
+     */
+    private void drawOpaqueFrame(Canvas canvas) {
+        // Erstelle ein Bitmap für den Rahmen mit echter Transparenz
+        Bitmap frameBitmap = Bitmap.createBitmap(canvas.getWidth(), canvas.getHeight(), Bitmap.Config.ARGB_8888);
+        Canvas frameCanvas = new Canvas(frameBitmap);
+
+        // Zeichne den gesamten Bereich mit der Hintergrundfarbe
+        frameCanvas.drawColor(Color.parseColor("#F5F5F5"));
+
+        // Schneide einen Kreis in der Größe der Scheiben aus
+        frameCanvas.save();
+        frameCanvas.translate(centerX, centerY);
+        frameCanvas.drawCircle(0, 0, outerRadius, clearPaint);
+        frameCanvas.restore();
+
+        // Zeichne das Bitmap auf den Haupt-Canvas
+        canvas.drawBitmap(frameBitmap, 0, 0, null);
+        frameBitmap.recycle();
     }
 
     @Override
