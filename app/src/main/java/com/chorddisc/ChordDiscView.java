@@ -257,6 +257,132 @@ public class ChordDiscView extends View {
 
         // Zeichne opaken Rahmen um die Scheiben, um herausragende Texte zu verdecken
         drawOpaqueFrame(canvas);
+
+        // Zeichne zentralen Play-Button über allem
+        drawCentralPlayButton(canvas);
+
+        // Zeichne Drehpfeile als Hinweis
+        drawRotationArrows(canvas);
+    }
+
+    /**
+     * Zeichnet zwei gebogene Doppelpfeile als Hinweis zum Drehen der Scheibe
+     */
+    private void drawRotationArrows(Canvas canvas) {
+        // Paint für die Pfeile (halbtransparent grau)
+        Paint arrowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        arrowPaint.setColor(Color.argb(180, 80, 80, 80));
+        arrowPaint.setStyle(Paint.Style.STROKE);
+        arrowPaint.setStrokeWidth(6f);
+        arrowPaint.setStrokeCap(Paint.Cap.ROUND);
+
+        // Radius für die Pfeile (zwischen innerem Button und Noten)
+        float arrowRadius = (innerRadius * 4f + notePositionRadius) / 2f;
+
+        // LINKER Bogen: Von 150° bis 210° (linke Seite)
+        // In Android: 0° = rechts, 90° = unten, 180° = links, 270° = oben
+        canvas.save();
+        canvas.translate(centerX, centerY);
+        android.graphics.Path leftArrow = new android.graphics.Path();
+        leftArrow.addArc(-arrowRadius, -arrowRadius, arrowRadius, arrowRadius, 150, 60);
+        canvas.drawPath(leftArrow, arrowPaint);
+        canvas.restore();
+
+        // Linke Pfeilspitze bei 150° (oberes Ende, zeigt nach unten/cw)
+        canvas.save();
+        canvas.translate(centerX, centerY);
+        canvas.rotate(150);
+        canvas.translate(arrowRadius, 0);
+        canvas.rotate(0);  // 90° - 90° = 0°
+        drawArrowHead(canvas, arrowPaint);
+        canvas.restore();
+
+        // Linke Pfeilspitze bei 210° (unteres Ende, zeigt nach oben/ccw)
+        canvas.save();
+        canvas.translate(centerX, centerY);
+        canvas.rotate(210);
+        canvas.translate(arrowRadius, 0);
+        canvas.rotate(-180);  // -90° - 90° = -180°
+        drawArrowHead(canvas, arrowPaint);
+        canvas.restore();
+
+        // RECHTER Bogen: Von -30° bis +30° (rechte Seite)
+        canvas.save();
+        canvas.translate(centerX, centerY);
+        android.graphics.Path rightArrow = new android.graphics.Path();
+        rightArrow.addArc(-arrowRadius, -arrowRadius, arrowRadius, arrowRadius, -30, 60);
+        canvas.drawPath(rightArrow, arrowPaint);
+        canvas.restore();
+
+        // Rechte Pfeilspitze bei -30° (oberes Ende, zeigt nach unten/cw)
+        canvas.save();
+        canvas.translate(centerX, centerY);
+        canvas.rotate(-30);
+        canvas.translate(arrowRadius, 0);
+        canvas.rotate(0);  // 90° - 90° = 0°
+        drawArrowHead(canvas, arrowPaint);
+        canvas.restore();
+
+        // Rechte Pfeilspitze bei 30° (unteres Ende, zeigt nach oben/ccw)
+        canvas.save();
+        canvas.translate(centerX, centerY);
+        canvas.rotate(30);
+        canvas.translate(arrowRadius, 0);
+        canvas.rotate(-180);  // -90° - 90° = -180°
+        drawArrowHead(canvas, arrowPaint);
+        canvas.restore();
+    }
+
+    /**
+     * Zeichnet eine Pfeilspitze (doppelt so groß für bessere Sichtbarkeit)
+     */
+    private void drawArrowHead(Canvas canvas, Paint paint) {
+        android.graphics.Path arrowHead = new android.graphics.Path();
+        arrowHead.moveTo(0, -24);    // Spitze (doppelt so lang: 24 statt 12)
+        arrowHead.lineTo(-16, 16);   // Links (doppelt so breit: 16 statt 8)
+        arrowHead.lineTo(16, 16);    // Rechts (doppelt so breit: 16 statt 8)
+        arrowHead.close();
+
+        Paint fillPaint = new Paint(paint);
+        fillPaint.setStyle(Paint.Style.FILL);
+        fillPaint.setColor(Color.argb(180, 80, 80, 80)); // Gleiche Farbe wie Linie
+        canvas.drawPath(arrowHead, fillPaint);
+    }
+
+    /**
+     * Zeichnet den zentralen runden Play-Button in der Mitte der Scheibe
+     */
+    private void drawCentralPlayButton(Canvas canvas) {
+        canvas.save();
+        canvas.translate(centerX, centerY);
+
+        // Button-Radius (größer als innerRadius)
+        float buttonRadius = innerRadius * 4f;
+
+        // Button-Hintergrund (grün)
+        Paint buttonPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        buttonPaint.setColor(Color.parseColor("#4CAF50")); // Grün
+        buttonPaint.setStyle(Paint.Style.FILL);
+        canvas.drawCircle(0, 0, buttonRadius, buttonPaint);
+
+        // Button-Umriss (dunkel)
+        Paint buttonStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        buttonStrokePaint.setColor(Color.BLACK);
+        buttonStrokePaint.setStyle(Paint.Style.STROKE);
+        buttonStrokePaint.setStrokeWidth(4f);
+        canvas.drawCircle(0, 0, buttonRadius, buttonStrokePaint);
+
+        // Play-Symbol (▶) - großer Text
+        Paint playTextPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        playTextPaint.setColor(Color.WHITE);
+        playTextPaint.setTextSize(buttonRadius * 1.2f);
+        playTextPaint.setTextAlign(Paint.Align.CENTER);
+        playTextPaint.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+
+        // Zeichne das Play-Symbol leicht nach rechts versetzt (wegen Dreieck-Form)
+        canvas.drawText("▶", buttonRadius * 0.1f, playTextPaint.getTextSize() * 0.35f, playTextPaint);
+
+        canvas.restore();
     }
 
     /**
@@ -659,9 +785,19 @@ public class ChordDiscView extends View {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                // Prüfe, ob Touch im drehbaren Bereich ist
-                float distance = (float) Math.sqrt(x * x + y * y);
-                if (distance < outerRadius && distance > innerRadius) {
+                // Prüfe zuerst, ob der zentrale Play-Button getroffen wurde
+                float distanceFromCenter = (float) Math.sqrt(x * x + y * y);
+                float buttonRadius = innerRadius * 4f;
+
+                if (distanceFromCenter < buttonRadius) {
+                    // Play-Button wurde getroffen - spiele Tonleiter
+                    performClick();
+                    playCurrentScale();
+                    return true;
+                }
+
+                // Prüfe, ob Touch im drehbaren Bereich ist (außerhalb des Buttons, aber innerhalb der Scheibe)
+                if (distanceFromCenter < outerRadius && distanceFromCenter > buttonRadius) {
                     // Stoppe laufende Snap-Animation
                     if (snapAnimator != null && snapAnimator.isRunning()) {
                         snapAnimator.cancel();

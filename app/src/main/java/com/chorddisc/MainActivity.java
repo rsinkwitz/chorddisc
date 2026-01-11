@@ -1,7 +1,6 @@
 package com.chorddisc;
 
 import android.os.Bundle;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -40,9 +39,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Setup Button für Tonleiter abspielen
-        Button playScaleButton = findViewById(R.id.buttonPlayScale);
-        playScaleButton.setOnClickListener(v -> chordDiscView.playCurrentScale());
 
         // Setup RadioGroup für Akkord-Typ
         RadioGroup chordTypeRadioGroup = findViewById(R.id.chordTypeRadioGroup);
