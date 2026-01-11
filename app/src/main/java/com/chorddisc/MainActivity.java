@@ -62,8 +62,9 @@ public class MainActivity extends AppCompatActivity {
         scaleTypeRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
             if (checkedId == R.id.radioMajorScale) {
                 chordDiscView.setScaleType(ChordDiscView.ScaleType.MAJOR);
-                // Harmonie nur bei Dur verfügbar
+                // Bei Dur: Harmonie verfügbar und automatisch aktivieren
                 harmonicButton.setEnabled(true);
+                chordTypeRadioGroup.check(R.id.radioHarmonic);
             } else if (checkedId == R.id.radioNaturalMinor) {
                 chordDiscView.setScaleType(ChordDiscView.ScaleType.NATURAL_MINOR);
                 // Bei Moll: Harmonie deaktivieren

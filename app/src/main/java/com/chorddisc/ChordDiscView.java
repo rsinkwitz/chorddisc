@@ -270,11 +270,19 @@ public class ChordDiscView extends View {
 
             // Visuelle Hervorhebung für aktuell gespielte Note (Tonleiter-Modus)
             if (i == highlightedNoteIndex) {
-                Paint highlightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-                highlightPaint.setColor(Color.YELLOW);
-                highlightPaint.setStyle(Paint.Style.STROKE);
-                highlightPaint.setStrokeWidth(8f);
-                canvas.drawCircle(0, 0, noteCircleRadius * 1.3f, highlightPaint);
+                // Gelber Hintergrund (gefüllt)
+                Paint highlightFillPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                highlightFillPaint.setColor(Color.YELLOW);
+                highlightFillPaint.setStyle(Paint.Style.FILL);
+                highlightFillPaint.setAlpha(180); // Halbtransparent für bessere Sichtbarkeit
+                canvas.drawCircle(0, 0, noteCircleRadius * 1.4f, highlightFillPaint);
+
+                // Gelber Ring (Umriss)
+                Paint highlightStrokePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                highlightStrokePaint.setColor(Color.YELLOW);
+                highlightStrokePaint.setStyle(Paint.Style.STROKE);
+                highlightStrokePaint.setStrokeWidth(10f); // Dicker für bessere Sichtbarkeit
+                canvas.drawCircle(0, 0, noteCircleRadius * 1.5f, highlightStrokePaint);
             }
 
             // Text - rotiert zurück, damit er immer aufrecht steht
@@ -314,6 +322,64 @@ public class ChordDiscView extends View {
     }
 
     /**
+     * Bestimmt ob an Position i ein Loch gezeichnet werden soll,
+     * basierend auf dem gewählten Tonleiter-Typ und der aktuellen Tonika.
+     */
+    private boolean shouldShowHole(int position) {
+        // Bei Dur: Original-Löcher aus POSITIONS array
+        if (scaleType == ScaleType.MAJOR) {
+            return POSITIONS[position].hole;
+        }
+
+        // Bei Moll: Berechne welche Noten in der Moll-Tonleiter sind
+        // Zuerst: Welche Note steht aktuell oben (= Tonika)?
+        float normalizedRotation = -bottomDiscRotation % 360;
+        if (normalizedRotation < 0) normalizedRotation += 360;
+        int tonikaIndex = Math.round(normalizedRotation / ANGLE_PER_POSITION) % 19;
+
+        // Tonleiter-Intervalle in Halbtönen
+        int[] halftonesInScale;
+
+        if (scaleType == ScaleType.NATURAL_MINOR) {
+            // Natürliches Moll: W-H-W-W-H-W-W (0, 2, 3, 5, 7, 8, 10, 12)
+            halftonesInScale = new int[]{0, 2, 3, 5, 7, 8, 10, 12};
+        } else { // HARMONIC_MINOR
+            // Harmonisches Moll: W-H-W-W-H-1.5-H (0, 2, 3, 5, 7, 8, 11, 12)
+            halftonesInScale = new int[]{0, 2, 3, 5, 7, 8, 11, 12};
+        }
+
+        // Mapping: Halbtöne → Array-Position-Offset
+        // Basierend auf dem 19-Positionen-Quintenzirkel
+        // 0=C, 3=D (+2 HT), 6=E (+4 HT), 8=F (+5 HT), 11=G (+7 HT), 14=A (+9 HT), 17=H (+11 HT)
+        int[] halftoneToPositionOffset = {
+            0,  // 0 HT: Tonika
+            2,  // 1 HT: (ungefähr, Position 1 oder 2)
+            3,  // 2 HT: D (Position +3 von C)
+            5,  // 3 HT: Eb (Position +5)
+            6,  // 4 HT: E (Position +6)
+            8,  // 5 HT: F (Position +8)
+            9,  // 6 HT: F# (Position +9)
+            11, // 7 HT: G (Position +11)
+            13, // 8 HT: Ab (Position +13)
+            14, // 9 HT: A (Position +14)
+            16, // 10 HT: B (Position +16)
+            17, // 11 HT: H (Position +17)
+            0   // 12 HT: Oktave
+        };
+
+        // Prüfe ob die aktuelle Position in der Tonleiter ist
+        for (int halftone : halftonesInScale) {
+            int positionOffset = halftoneToPositionOffset[halftone];
+            int notePosition = (tonikaIndex + positionOffset) % 19;
+            if (notePosition == position) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Zeichnet die obere feste Scheibe mit Löchern und Indikator
      */
     private void drawTopDisc(Canvas canvas) {
@@ -329,7 +395,7 @@ public class ChordDiscView extends View {
 
         // Schneide echte Löcher aus (hole = true)
         for (int i = 0; i < 19; i++) {
-            if (POSITIONS[i].hole) {
+            if (shouldShowHole(i)) {
                 float angle = 360f / 19f * i;
                 topDiscCanvas.save();
                 topDiscCanvas.rotate(angle);
@@ -367,7 +433,7 @@ public class ChordDiscView extends View {
 
         // Zeichne Umrisse und Markierungen für die Löcher
         for (int i = 0; i < 19; i++) {
-            if (POSITIONS[i].hole) {
+            if (shouldShowHole(i)) {
                 float angle = 360f / 19f * i;
                 canvas.save();
                 canvas.rotate(angle);
@@ -682,8 +748,16 @@ public class ChordDiscView extends View {
                 rotateToNote(tappedNoteIndex);
                 break;
             case ROTATE_TO_MOLL:
-                // Rotiere zum roten Kreis (MINOR_POS = 14 = A)
-                rotateToNote(MINOR_POS);
+                // Der getippte Buchstabe soll zum roten Loch (Position 14 = A) rotieren
+                // Wenn tappedNoteIndex zur Position MINOR_POS (14) soll:
+                // Wir müssen Note X nach oben bringen, wobei X = (tappedNoteIndex - MINOR_POS)
+                // Beispiel: Tippe auf D (Position 3), soll zu Position 14
+                //           Also muss Note bei Position (3-14+19)%19 = 8 (F) nach oben
+                //           Dann steht D bei der roten Position 14
+
+                // Berechne welche Note nach oben muss, damit getippte Note bei MINOR_POS steht
+                int noteToRotateUp = (tappedNoteIndex - MINOR_POS + 19) % 19;
+                rotateToNote(noteToRotateUp);
                 break;
         }
     }
