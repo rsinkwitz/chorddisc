@@ -1,4 +1,4 @@
-package com.chorddisc;
+package com.rsinkwitz.chorddisc;
 
 import android.content.res.Configuration;
 import android.content.res.Resources;

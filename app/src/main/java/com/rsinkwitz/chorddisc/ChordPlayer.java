@@ -1,4 +1,4 @@
-package com.chorddisc;
+package com.rsinkwitz.chorddisc;
 
 import android.content.Context;
 import android.media.AudioAttributes;

@@ -1,4 +1,4 @@
-package com.chorddisc;
+package com.rsinkwitz.chorddisc;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
