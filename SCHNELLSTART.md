@@ -126,11 +126,11 @@ chord_disc/
 ```
 
 ### Touch-Interaktion:
-1. Finger berührt äußeren Ring
-2. Wischbewegung wird in Rotation umgewandelt
-3. Untere Scheibe dreht sich
-4. Text rotiert entgegen, bleibt aufrecht
-5. Neue Tonart wird im blauen Kreis angezeigt
+1. **Drag**: Finger berührt äußeren Ring, Wischbewegung dreht Scheibe
+2. **Release**: Beim Loslassen rastet Scheibe auf nächster Position ein (0.5s)
+3. **Tap**: Antippen einer Note rotiert diese animiert nach oben
+4. Text rotiert entgegen, bleibt immer aufrecht
+5. Aktuelle Tonart und Vorzeichen werden im Indikator angezeigt
 
 ## 🔍 Code-Highlights
 

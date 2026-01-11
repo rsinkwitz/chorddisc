@@ -73,6 +73,9 @@ public class ChordDiscView extends View {
     // Touch-Handling
     private float lastTouchAngle = 0f;
     private boolean isDragging = false;
+    private float touchDownX = 0f;
+    private float touchDownY = 0f;
+    private static final float TAP_THRESHOLD = 20f; // Pixel-Toleranz für Tap vs. Drag
 
     // Snap-Animation
     private ValueAnimator snapAnimator;
@@ -220,7 +223,8 @@ public class ChordDiscView extends View {
         canvas.translate(centerX, centerY);
 
         // Berechne, welche Note beim Indikator steht (oben bei 0°)
-        float normalizedRotation = bottomDiscRotation % 360;
+        // Bei bottomDiscRotation = -X° ist Note X oben (wegen canvas.rotate im Uhrzeigersinn)
+        float normalizedRotation = -bottomDiscRotation % 360;
         if (normalizedRotation < 0) normalizedRotation += 360;
 
         // Finde die Note, die am nächsten bei 0° (oben) steht
@@ -353,17 +357,27 @@ public class ChordDiscView extends View {
             snapAnimator.cancel();
         }
 
-        // Normalisiere aktuelle Rotation
-        float normalizedRotation = bottomDiscRotation % 360;
+        // Bei bottomDiscRotation = -X° ist Note X oben
+        // Invertiere für die Berechnung
+        float normalizedRotation = -bottomDiscRotation % 360;
         if (normalizedRotation < 0) normalizedRotation += 360;
 
         // Finde nächste Snap-Position
         float currentPositionFloat = normalizedRotation / ANGLE_PER_POSITION;
         int nearestPosition = Math.round(currentPositionFloat);
-        float targetRotation = nearestPosition * ANGLE_PER_POSITION;
+
+        // Zielrotation ist negativ (weil canvas.rotate im Uhrzeigersinn dreht)
+        float targetRotation = -(nearestPosition * ANGLE_PER_POSITION);
+
+        // Normalisiere aktuelle Rotation für Vergleich
+        float normalizedCurrent = bottomDiscRotation % 360;
+        if (normalizedCurrent < 0) normalizedCurrent += 360;
+
+        float normalizedTarget = targetRotation % 360;
+        if (normalizedTarget < 0) normalizedTarget += 360;
 
         // Berechne kürzesten Weg zum Ziel
-        float deltaRotation = targetRotation - normalizedRotation;
+        float deltaRotation = normalizedTarget - normalizedCurrent;
         if (deltaRotation > 180) deltaRotation -= 360;
         if (deltaRotation < -180) deltaRotation += 360;
 
@@ -373,6 +387,114 @@ public class ChordDiscView extends View {
             invalidate();
             return;
         }
+
+        // Erstelle Animation
+        final float startRotation = bottomDiscRotation;
+        final float endRotation = bottomDiscRotation + deltaRotation;
+
+        snapAnimator = ValueAnimator.ofFloat(0f, 1f);
+        snapAnimator.setDuration(SNAP_DURATION_MS);
+        snapAnimator.setInterpolator(new DecelerateInterpolator());
+
+        snapAnimator.addUpdateListener(animation -> {
+            float progress = (float) animation.getAnimatedValue();
+            bottomDiscRotation = startRotation + (endRotation - startRotation) * progress;
+            invalidate();
+        });
+
+        snapAnimator.start();
+    }
+
+    /**
+     * Findet die Note, die an der gegebenen Position getippt wurde
+     * @return Index der Note oder -1, wenn keine Note getroffen
+     */
+    private int findTappedNote(float touchX, float touchY) {
+        // Transformiere Touch-Position ins Scheiben-Koordinatensystem
+        float x = touchX - centerX;
+        float y = touchY - centerY;
+
+        // Berechne Winkel und Distanz vom Zentrum
+        // atan2 gibt -90° für oben, 0° für rechts, +90° für unten
+        // Canvas rotate gibt 0° für oben, 90° für rechts, 180° für unten
+        // Daher: +90° um von atan2 zu Canvas-Koordinaten zu konvertieren
+        float touchAngleRaw = (float) Math.toDegrees(Math.atan2(y, x));
+        float touchAngle = touchAngleRaw + 90f; // Konvertiere: -90°(oben) → 0°(oben)
+        float distance = (float) Math.sqrt(x * x + y * y);
+
+        // Prüfe, ob Touch im Bereich der Noten ist
+        float minDistance = notePositionRadius - noteCircleRadius * 1.2f;
+        float maxDistance = notePositionRadius + noteCircleRadius * 1.2f;
+
+        if (distance < minDistance || distance > maxDistance) {
+            return -1; // Nicht im Noten-Bereich
+        }
+
+        // Normalisiere Touch-Winkel (0-360)
+        while (touchAngle < 0) touchAngle += 360;
+        while (touchAngle >= 360) touchAngle -= 360;
+
+        // Finde die Note, die am nächsten zum Touch-Winkel ist
+        // Jede Note i ist bei (i * ANGLE_PER_POSITION + bottomDiscRotation) Grad
+        float minAngleDiff = 360;
+        int closestNoteIndex = -1;
+
+        for (int i = 0; i < 19; i++) {
+            // Berechne wo Note i aktuell auf dem Bildschirm ist (in Canvas-Koordinaten)
+            float noteScreenAngle = (i * ANGLE_PER_POSITION + bottomDiscRotation);
+            while (noteScreenAngle < 0) noteScreenAngle += 360;
+            while (noteScreenAngle >= 360) noteScreenAngle -= 360;
+
+            // Berechne Winkel-Differenz (kürzester Weg)
+            float angleDiff = Math.abs(touchAngle - noteScreenAngle);
+            if (angleDiff > 180) angleDiff = 360 - angleDiff;
+
+            // Merke die nächste Note
+            if (angleDiff < minAngleDiff) {
+                minAngleDiff = angleDiff;
+                closestNoteIndex = i;
+            }
+        }
+
+        // Nur akzeptieren, wenn innerhalb von ±15° der Note
+        if (minAngleDiff < 15) {
+            return closestNoteIndex;
+        }
+
+        return -1;
+    }
+
+    /**
+     * Animiert die Scheibe, sodass die gegebene Note oben beim Indikator steht
+     */
+    private void rotateToNote(int noteIndex) {
+        // Stoppe laufende Animation
+        if (snapAnimator != null && snapAnimator.isRunning()) {
+            snapAnimator.cancel();
+        }
+
+        // Um Note X nach oben zu bringen:
+        // - Note X ist bei Position X * ANGLE_PER_POSITION
+        // - canvas.rotate dreht im Uhrzeigersinn, Noten wandern gegen Uhrzeigersinn
+        // - Um Note X von ihrer Position nach 0° (oben) zu bringen:
+        //   Scheibe muss um -(X * ANGLE_PER_POSITION) drehen
+        float targetRotation = -(noteIndex * ANGLE_PER_POSITION);
+
+        // Normalisiere aktuelle Rotation
+        float normalizedCurrentRotation = bottomDiscRotation % 360;
+        if (normalizedCurrentRotation < 0) normalizedCurrentRotation += 360;
+
+        // Normalisiere Zielrotation
+        float normalizedTargetRotation = targetRotation % 360;
+        if (normalizedTargetRotation < 0) normalizedTargetRotation += 360;
+
+        // Berechne Differenz zur Zielposition
+        float deltaRotation = normalizedTargetRotation - normalizedCurrentRotation;
+
+        // Korrigiere für kürzesten Weg (niemals mehr als 180° drehen)
+        while (deltaRotation > 180) deltaRotation -= 360;
+        while (deltaRotation < -180) deltaRotation += 360;
+
 
         // Erstelle Animation
         final float startRotation = bottomDiscRotation;
@@ -412,24 +534,37 @@ public class ChordDiscView extends View {
                         snapAnimator.cancel();
                     }
                     isDragging = true;
-                    lastTouchAngle = (float) Math.toDegrees(Math.atan2(y, x));
+                    touchDownX = event.getX();
+                    touchDownY = event.getY();
+                    // Konvertiere atan2 zu Canvas-Koordinaten: +90°
+                    lastTouchAngle = (float) Math.toDegrees(Math.atan2(y, x)) + 90f;
                     return true;
                 }
                 break;
 
             case MotionEvent.ACTION_MOVE:
                 if (isDragging) {
-                    float currentAngle = (float) Math.toDegrees(Math.atan2(y, x));
-                    float deltaAngle = currentAngle - lastTouchAngle;
+                    // Prüfe, ob sich der Finger weit genug bewegt hat für einen Drag
+                    float moveDistance = (float) Math.sqrt(
+                        Math.pow(event.getX() - touchDownX, 2) +
+                        Math.pow(event.getY() - touchDownY, 2)
+                    );
 
-                    // Normalisiere den Winkel
-                    if (deltaAngle > 180) deltaAngle -= 360;
-                    if (deltaAngle < -180) deltaAngle += 360;
+                    if (moveDistance > TAP_THRESHOLD) {
+                        // Es ist ein Drag, drehe die Scheibe
+                        // Konvertiere atan2 zu Canvas-Koordinaten: +90°
+                        float currentAngle = (float) Math.toDegrees(Math.atan2(y, x)) + 90f;
+                        float deltaAngle = currentAngle - lastTouchAngle;
 
-                    bottomDiscRotation += deltaAngle;
-                    lastTouchAngle = currentAngle;
+                        // Normalisiere den Winkel
+                        if (deltaAngle > 180) deltaAngle -= 360;
+                        if (deltaAngle < -180) deltaAngle += 360;
 
-                    invalidate(); // Neuzeichnen
+                        bottomDiscRotation += deltaAngle;
+                        lastTouchAngle = currentAngle;
+
+                        invalidate(); // Neuzeichnen
+                    }
                     return true;
                 }
                 break;
@@ -437,9 +572,25 @@ public class ChordDiscView extends View {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 if (isDragging) {
-                    performClick();
-                    // Starte Snap-Animation zur nächsten Position
-                    snapToNearestPosition();
+                    // Prüfe, ob es ein Tap oder Drag war
+                    float moveDistance = (float) Math.sqrt(
+                        Math.pow(event.getX() - touchDownX, 2) +
+                        Math.pow(event.getY() - touchDownY, 2)
+                    );
+
+                    if (moveDistance <= TAP_THRESHOLD) {
+                        // Es war ein Tap - prüfe, ob eine Note getroffen wurde
+                        int tappedNote = findTappedNote(event.getX(), event.getY());
+                        if (tappedNote >= 0) {
+                            // Note getroffen - rotiere zu dieser Position
+                            performClick();
+                            rotateToNote(tappedNote);
+                        }
+                    } else {
+                        // Es war ein Drag - Snap zur nächsten Position
+                        performClick();
+                        snapToNearestPosition();
+                    }
                 }
                 isDragging = false;
                 break;

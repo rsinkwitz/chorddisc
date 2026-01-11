@@ -8,26 +8,35 @@ Eine **vollständige, lauffähige Android-App** mit allen gewünschten Funktione
 
 1. ✅ **Zwei Scheiben-System**
    - Untere Scheibe: Drehbar, zeigt alle 19 chromatischen Noten
-   - Obere Scheibe: Fest, mit Löchern und Indikatoren
+   - Obere Scheibe: Fest, mit echten transparenten Löchern
+   - Opaker Rahmen: Verdeckt herausragende Texte
 
 2. ✅ **Interaktive Steuerung**
-   - Touch & Drag zum Drehen der unteren Scheibe
-   - Flüssige, responsive Bewegung
+   - **Drag**: Touch & Drag zum manuellen Drehen der unteren Scheibe
    - **Snap-Funktion**: Rastet automatisch auf nächster Position ein (0.5s Animation)
+   - **Tap-to-Rotate**: Tippen auf eine Note rotiert diese animiert nach oben zur blauen Markierung
+   - Flüssige, responsive Bewegung mit DecelerateInterpolator
 
 3. ✅ **Aufrechte Textdarstellung** 🌟
    - Text dreht sich entgegen der Scheibendrehung
    - Immer lesbar - VORTEIL gegenüber Papier!
 
 4. ✅ **Musikalische Informationen**
-   - Blauer Kreis: Dur-Tonart
-   - Roter Kreis: Parallel-Moll
-   - Löcher: Tonleiter-Töne
-   - Rechteck: Vorzeichen (♯ oder ♭)
+   - Blauer Kreis: Dur-Tonart (Position 0 = C)
+   - Roter Kreis: Parallel-Moll (Position 14 = A)
+   - Transparente Löcher: Tonleiter-Töne sichtbar
+   - Rechteckiges Loch: Vorzeichen (♯ oder ♭) - dynamisch angezeigt
+   - Vorzeichen-Anzeige: Nur für aktuelle Tonart im Indikator sichtbar
 
-5. ✅ **Kompatibilität**
+5. ✅ **Responsive Design**
+   - Volle Bildschirmbreite ausgenutzt (96% der Displaygröße)
+   - Passt sich automatisch an alle Bildschirmgrößen an
+   - Funktioniert im Portrait-Modus
+
+6. ✅ **Kompatibilität**
    - Funktioniert ab Android 5.0 (API 21)
    - Unterstützt auch ältere Geräte!
+   - Optimiert für moderne Android-Versionen
 
 ---
 
