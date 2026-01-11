@@ -1,23 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:orientation="vertical"
+    android:background="#F5F5F5"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <!-- RadioGroup für Tap-Modi -->
+    <RadioGroup
+        android:id="@+id/tapModeRadioGroup"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textSize="24sp"
-        android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center"
+        android:background="@android:color/white"
+        android:elevation="4dp">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <RadioButton
+            android:id="@+id/radioPlayChord"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🎵 Akkord"
+            android:textSize="12sp"
+            android:checked="true"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp" />
+
+        <RadioButton
+            android:id="@+id/radioRotateToDur"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🔵 Dur"
+            android:textSize="12sp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp" />
+
+        <RadioButton
+            android:id="@+id/radioRotateToMoll"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🔴 Moll"
+            android:textSize="12sp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp" />
+    </RadioGroup>
+
+    <!-- ChordDiscView (wird programmatisch hinzugefügt) -->
+    <FrameLayout
+        android:id="@+id/chordDiscContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+</LinearLayout>
 

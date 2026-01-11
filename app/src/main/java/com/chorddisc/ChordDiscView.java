@@ -20,6 +20,13 @@ import android.view.animation.DecelerateInterpolator;
  */
 public class ChordDiscView extends View {
 
+    // Tap-Modi
+    public enum TapMode {
+        PLAY_CHORD,         // Spiele Akkord
+        ROTATE_TO_DUR,      // Rotiere zur Dur-Position (blau)
+        ROTATE_TO_MOLL      // Rotiere zur Moll-Position (rot)
+    }
+
     // Musikalische Daten - 19 Positionen im Quintenzirkel
     private static final MusicalPosition[] POSITIONS = {
         new MusicalPosition("C", true, "0"),
@@ -82,9 +89,24 @@ public class ChordDiscView extends View {
     private static final float ANGLE_PER_POSITION = 360f / 19f; // 18.947°
     private static final int SNAP_DURATION_MS = 500; // 0.5 Sekunden
 
+    // Audio & Modus
+    private ChordPlayer chordPlayer;
+    private TapMode tapMode = TapMode.ROTATE_TO_DUR; // Standard-Modus
+
     public ChordDiscView(Context context) {
         super(context);
+        this.chordPlayer = null;
         initPaints();
+    }
+
+    public ChordDiscView(Context context, ChordPlayer chordPlayer) {
+        super(context);
+        this.chordPlayer = chordPlayer;
+        initPaints();
+    }
+
+    public void setTapMode(TapMode mode) {
+        this.tapMode = mode;
     }
 
     private void initPaints() {
@@ -582,9 +604,8 @@ public class ChordDiscView extends View {
                         // Es war ein Tap - prüfe, ob eine Note getroffen wurde
                         int tappedNote = findTappedNote(event.getX(), event.getY());
                         if (tappedNote >= 0) {
-                            // Note getroffen - rotiere zu dieser Position
                             performClick();
-                            rotateToNote(tappedNote);
+                            handleNoteTap(tappedNote);
                         }
                     } else {
                         // Es war ein Drag - Snap zur nächsten Position
@@ -597,6 +618,78 @@ public class ChordDiscView extends View {
         }
 
         return super.onTouchEvent(event);
+    }
+
+    /**
+     * Behandelt den Tap auf eine Note basierend auf dem aktuellen Modus
+     */
+    private void handleNoteTap(int tappedNoteIndex) {
+        switch (tapMode) {
+            case PLAY_CHORD:
+                playChordForNote(tappedNoteIndex);
+                break;
+            case ROTATE_TO_DUR:
+                rotateToNote(tappedNoteIndex);
+                break;
+            case ROTATE_TO_MOLL:
+                // Rotiere zum roten Kreis (MINOR_POS = 14 = A)
+                rotateToNote(MINOR_POS);
+                break;
+        }
+    }
+
+    /**
+     * Spielt den Akkord für die getippte Note.
+     * Bestimmt automatisch, ob Dur oder Moll gespielt werden soll.
+     */
+    private void playChordForNote(int noteIndex) {
+        if (chordPlayer == null) {
+            return;
+        }
+
+        // Berechne welche Note aktuell oben steht (Dur-Position = Tonika)
+        float normalizedRotation = -bottomDiscRotation % 360;
+        if (normalizedRotation < 0) normalizedRotation += 360;
+        int tonika = Math.round(normalizedRotation / ANGLE_PER_POSITION) % 19;
+
+        // Bestimme ob die getippte Note Dur oder Moll sein soll
+        boolean isMajor = shouldPlayMajorChord(noteIndex, tonika);
+
+        // Spiele den Akkord
+        chordPlayer.playChord(noteIndex, isMajor);
+    }
+
+    /**
+     * Bestimmt, ob ein Dur- oder Moll-Akkord gespielt werden soll.
+     * Neue Regel-Definition basierend auf absoluten Positionen im Array:
+     *
+     * Bei C oben (Tonika = 0):
+     * - Tonika: C (0) = Dur
+     * - Subdominante: F (8) = Dur
+     * - Dominante: G (11) = Dur
+     * - Dominante des Parallel-Molls: E (6) = Dur
+     * - Parallel-Moll: A (14) = Moll
+     * - Subdominante des Parallel-Molls: D (3) = Moll
+     * - Alle anderen: Dur (inkl. H bei Position 17)
+     */
+    private boolean shouldPlayMajorChord(int noteIndex, int tonika) {
+        // Berechne die Moll-Positionen relativ zur Tonika
+        // Die Abstände sind fest basierend auf dem Array:
+        // C(0) → D(3) = +3, C(0) → E(6) = +6, C(0) → F(8) = +8, C(0) → G(11) = +11, C(0) → A(14) = +14
+
+        // Parallel-Moll: +14 Positionen von Tonika (A wenn C = Tonika)
+        int parallelMoll = (tonika + 14) % 19;
+
+        // Subdominante des Parallel-Molls: +3 Positionen von Tonika (D wenn C = Tonika)
+        int subdominanteMoll = (tonika + 3) % 19;
+
+        // Prüfe ob Moll-Akkord
+        if (noteIndex == parallelMoll || noteIndex == subdominanteMoll) {
+            return false; // Moll
+        }
+
+        // Alle anderen: Dur
+        return true;
     }
 
     /**
