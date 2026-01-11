@@ -1,0 +1,10 @@
+Bitte eine Android-App, auch für ältere Geräte.
+Die Sourcen in app\src\old-source\*.java erstellen ein SVG mit zwei runden Scheiben, welches als
+Beispiel im gleichen Verzeichnis vorhanden ist. Wenn man in der unteren Scheibe die mit '+' markierten
+Kreise und das Rechteck ausschneidet und sie übereinanderlegt, erhält man in physischer Form das, was
+ich als App möchte. Man kann dann durch Drehen der Scheiben gegeneinander im blauen Kreis eine
+musikalische Tonart einstellen und bekommte gleich dazu die Tonleiter in den runden Löchern der
+obenliegenden Scheibe und die Anzahl Kreuze (Fis, Cis, ...) oder Bs (Es, As, ...) im
+rechteckigen Loch, sowie Parallel-Moll im roten Loch. In der App sollte man durch Streichen mit dem
+Finger die untenliegende Scheibe drehen können. Die Buchstaben sollten gegenrotiert werden, so dass
+sie immer aufrecht stehen (Vorteil gegenüber Papier). Bitte vorerst nur eine Spezifikation, noch kein Code.
