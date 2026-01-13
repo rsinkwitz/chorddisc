@@ -180,7 +180,7 @@ public class ChordDiscView extends View {
         this.isTopDiscTransparent = transparent;
         // Passe die Farbe der oberen Scheibe an
         if (transparent) {
-            topDiscPaint.setColor(Color.parseColor("#30E8E8E8")); // 19% Alpha (30 in Hex)
+            topDiscPaint.setColor(Color.parseColor("#99E8E8E8")); // 60% Alpha (99 in Hex) - besser sichtbare Löcher
         } else {
             topDiscPaint.setColor(Color.parseColor("#E8E8E8")); // Normal, deckend
         }
