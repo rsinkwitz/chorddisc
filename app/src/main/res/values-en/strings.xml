@@ -24,6 +24,7 @@
 
     <!-- Toggles -->
     <string name="toggle_transparency">Top disc transparent</string>
+    <string name="toggle_harmonies">Show harmonies</string>
     <string name="toggle_language">🇩🇪 Sprache / Language 🇺🇸</string>
 
     <!-- Help Dialog -->
@@ -39,6 +40,11 @@
         <br/>• Mode "🔵 to top": Rotates the note to the blue top position</p>
         <p><b>Disc in:</b> Choose between Major, natural Minor or harmonic Minor.</p>
         <p><b>Chord in:</b> Determines whether chords are played in Major, Minor or by Harmony.</p>
+        <p><b>Show harmonies:</b> Activates the harmony overlay, which visualizes functional harmonic relationships:
+        <br/>• <font color="#0064FF"><b>Blue lines:</b></font> Show the major functions (Tonic, Subdominant, Dominant)
+        <br/>• <font color="#FF3232"><b>Red lines:</b></font> Show the minor functions (Relative minor and its subdominant/dominant)
+        <br/>The lines connect harmonically related chords and help understand cadences and chord progressions.</p>
+        <p><b>Top disc transparent:</b> Makes the top disc semi-transparent to see both discs simultaneously.</p>
         <br/>
         <p><b>© 2026 Rainer Sinkwitz</b><br/>Version 1.0</p>
         <p>Developed for learning scales and chords.</p>

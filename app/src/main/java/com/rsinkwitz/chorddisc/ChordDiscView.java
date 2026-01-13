@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.RectF;
+import android.graphics.Typeface;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
@@ -89,6 +90,7 @@ public class ChordDiscView extends View {
 
     // Aktuelle Notation (wird je nach Sprache gesetzt)
     private static MusicalPosition[] POSITIONS = POSITIONS_EN; // Default: Englisch
+    private boolean useGermanNotation = false; // Default: Englisch
 
     private static final int MAJOR_POS = 0;  // Position für Dur (blau)
     private static final int MINOR_POS = 14; // Position für Moll (rot)
@@ -136,6 +138,7 @@ public class ChordDiscView extends View {
     private ScaleType scaleType = ScaleType.MAJOR; // Standard: Dur-Tonleiter
     private int highlightedNoteIndex = -1; // -1 = keine Hervorhebung
     private boolean isTopDiscTransparent = false; // Transparenz der oberen Scheibe
+    private boolean showHarmonies = false; // Harmonien-Overlay anzeigen
 
     public ChordDiscView(Context context) {
         super(context);
@@ -168,6 +171,7 @@ public class ChordDiscView extends View {
      * @param useGermanNotation true = Deutsche Notation (B=Bb, H=B), false = Englische Notation (B=B)
      */
     public void setNotationLanguage(boolean useGermanNotation) {
+        this.useGermanNotation = useGermanNotation;
         POSITIONS = useGermanNotation ? POSITIONS_DE : POSITIONS_EN;
         invalidate(); // Neu zeichnen mit neuer Notation
     }
@@ -184,6 +188,15 @@ public class ChordDiscView extends View {
         } else {
             topDiscPaint.setColor(Color.parseColor("#E8E8E8")); // Normal, deckend
         }
+        invalidate();
+    }
+
+    /**
+     * Setzt, ob das Harmonien-Overlay angezeigt werden soll.
+     * @param show true = Harmonien anzeigen, false = ausblenden
+     */
+    public void setShowHarmonies(boolean show) {
+        this.showHarmonies = show;
         invalidate();
     }
 
@@ -293,6 +306,11 @@ public class ChordDiscView extends View {
         // Zeichne opaken Rahmen um die Scheiben, um herausragende Texte zu verdecken
         drawOpaqueFrame(canvas);
 
+        // Zeichne Harmonien-Overlay (falls aktiviert)
+        if (showHarmonies) {
+            drawHarmoniesOverlay(canvas);
+        }
+
         // Zeichne zentralen Play-Button über allem
         drawCentralPlayButton(canvas);
 
@@ -391,8 +409,8 @@ public class ChordDiscView extends View {
         canvas.save();
         canvas.translate(centerX, centerY);
 
-        // Button-Radius (größer als innerRadius)
-        float buttonRadius = innerRadius * 4f;
+        // Button-Radius (5% kleiner, damit er zwischen die Linien passt)
+        float buttonRadius = innerRadius * 4f * 0.95f;
 
         // Button-Hintergrund (grün)
         Paint buttonPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -621,6 +639,163 @@ public class ChordDiscView extends View {
     }
 
     /**
+     * Zeichnet das Harmonien-Overlay mit Beschriftungen und Linien
+     * Zeigt die harmonischen Beziehungen: Tonika, Subdominante, Dominante, Parallel-Moll
+     * Die Positionen sind FEST und rotieren NICHT mit der Scheibe - sie bleiben bei den Löchern.
+     */
+    private void drawHarmoniesOverlay(Canvas canvas) {
+        // Paint für blaue Linien (Dur-Funktionen)
+        Paint blueLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        blueLinePaint.setColor(Color.argb(200, 0, 100, 255)); // Halbtransparentes Blau
+        blueLinePaint.setStyle(Paint.Style.STROKE);
+        blueLinePaint.setStrokeWidth(4f);
+
+        // Paint für rote Linien (Moll-Funktionen)
+        Paint redLinePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        redLinePaint.setColor(Color.argb(200, 255, 50, 50)); // Halbtransparentes Rot
+        redLinePaint.setStyle(Paint.Style.STROKE);
+        redLinePaint.setStrokeWidth(4f);
+
+        // Paint für Beschriftungen
+        Paint labelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        labelPaint.setTextSize(outerRadius * 0.07f);
+        labelPaint.setTextAlign(Paint.Align.CENTER);
+        labelPaint.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
+
+        // FESTE Positionen im 19er-Quintenzirkel (NICHT rotierend)
+        // Die Löcher der oberen Scheibe sind fest und rotieren nicht!
+        // Winkel = 360° / 19 * Position
+        float anglePerPosition = 360f / 19f;
+
+        // Position 0 = C (Tonika, blau)
+        float tonikaAngle = 0;
+
+        // Position 8 = F (Subdominante)
+        float subdominanteAngle = anglePerPosition * 8;
+
+        // Position 11 = G (Dominante)
+        float dominanteAngle = anglePerPosition * 11;
+
+        // Position 14 = A (Parallel-Moll, rot)
+        float parallelMollAngle = anglePerPosition * 14;
+
+        // Position 3 = D (Subdominante von A-Moll)
+        float mollSubdominanteAngle = anglePerPosition * 3;
+
+        // Position 6 = E (Dominante von A-Moll)
+        float mollDominanteAngle = anglePerPosition * 6;
+
+        canvas.save();
+        canvas.translate(centerX, centerY);
+
+        // Berechne Zentren der Löcher (Ausgangspunkte der Linien)
+        float tonikaX = (float) (notePositionRadius * Math.cos(Math.toRadians(tonikaAngle - 90)));
+        float tonikaY = (float) (notePositionRadius * Math.sin(Math.toRadians(tonikaAngle - 90)));
+
+        float subdominanteX = (float) (notePositionRadius * Math.cos(Math.toRadians(subdominanteAngle - 90)));
+        float subdominanteY = (float) (notePositionRadius * Math.sin(Math.toRadians(subdominanteAngle - 90)));
+
+        float dominanteX = (float) (notePositionRadius * Math.cos(Math.toRadians(dominanteAngle - 90)));
+        float dominanteY = (float) (notePositionRadius * Math.sin(Math.toRadians(dominanteAngle - 90)));
+
+        float parallelMollX = (float) (notePositionRadius * Math.cos(Math.toRadians(parallelMollAngle - 90)));
+        float parallelMollY = (float) (notePositionRadius * Math.sin(Math.toRadians(parallelMollAngle - 90)));
+
+        float mollSubdominanteX = (float) (notePositionRadius * Math.cos(Math.toRadians(mollSubdominanteAngle - 90)));
+        float mollSubdominanteY = (float) (notePositionRadius * Math.sin(Math.toRadians(mollSubdominanteAngle - 90)));
+
+        float mollDominanteX = (float) (notePositionRadius * Math.cos(Math.toRadians(mollDominanteAngle - 90)));
+        float mollDominanteY = (float) (notePositionRadius * Math.sin(Math.toRadians(mollDominanteAngle - 90)));
+
+        // Zeichne blaue Linien (Dur-Funktionen) mit Clipping außerhalb der Löcher
+        // Linie von Tonika zur Subdominante
+        drawLineOutsideHoles(canvas, tonikaX, tonikaY, subdominanteX, subdominanteY, blueLinePaint);
+
+        // Linie von Tonika zur Dominante
+        drawLineOutsideHoles(canvas, tonikaX, tonikaY, dominanteX, dominanteY, blueLinePaint);
+
+        // Zeichne rote Linien (Moll-Funktionen) mit Clipping außerhalb der Löcher
+        // Linie von Parallel-Moll zur Subdominante von Moll
+        drawLineOutsideHoles(canvas, parallelMollX, parallelMollY, mollSubdominanteX, mollSubdominanteY, redLinePaint);
+
+        // Linie von Parallel-Moll zur Dominante von Moll
+        drawLineOutsideHoles(canvas, parallelMollX, parallelMollY, mollDominanteX, mollDominanteY, redLinePaint);
+
+        // Zeichne Beschriftungen an den Positionen der Löcher
+        // Radius für Beschriftungen
+        float labelRadiusOuter = notePositionRadius * 1.30f; // Außen für blaue Labels
+
+        // Sprachabhängige Texte
+        String labelTonic = useGermanNotation ? "Tonika" : "Tonic";
+        String labelSubdominant = useGermanNotation ? "Subdominante" : "Subdominant";
+        String labelDominant = useGermanNotation ? "Dominante" : "Dominant";
+        String labelParallelMinor = useGermanNotation ? "Par. Moll" : "Rel. Minor";
+        // Moll-Harmonien: in beiden Sprachen gleich
+        String labelSubdominantMinor = "Subdom. (m)";
+        String labelDominantMinor = "Dom. (m)";
+
+        // Tonika (außen, blau)
+        labelPaint.setColor(Color.rgb(0, 100, 255));
+        float tonikaLabelX = (float) (labelRadiusOuter * Math.cos(Math.toRadians(tonikaAngle - 90)));
+        float tonikaLabelY = (float) (labelRadiusOuter * Math.sin(Math.toRadians(tonikaAngle - 90)));
+        canvas.drawText(labelTonic, tonikaLabelX, tonikaLabelY + labelPaint.getTextSize() / 3, labelPaint);
+
+        // Subdominante (außen, blau)
+        float subdominanteLabelX = (float) (labelRadiusOuter * Math.cos(Math.toRadians(subdominanteAngle - 90)));
+        float subdominanteLabelY = (float) (labelRadiusOuter * Math.sin(Math.toRadians(subdominanteAngle - 90)));
+        canvas.drawText(labelSubdominant, subdominanteLabelX, subdominanteLabelY + labelPaint.getTextSize() / 3, labelPaint);
+
+        // Dominante (außen, blau)
+        float dominanteLabelX = (float) (labelRadiusOuter * Math.cos(Math.toRadians(dominanteAngle - 90)));
+        float dominanteLabelY = (float) (labelRadiusOuter * Math.sin(Math.toRadians(dominanteAngle - 90)));
+        canvas.drawText(labelDominant, dominanteLabelX, dominanteLabelY + labelPaint.getTextSize() / 3, labelPaint);
+
+        // Rote Labels: unterhalb = gleiche X-Position, Y + noteCircleRadius * 1.5
+        labelPaint.setColor(Color.rgb(255, 50, 50));
+        float labelYOffset = noteCircleRadius * 1.5f;
+
+        // Parallel-Moll (unterhalb des Lochs, rot)
+        // Text unterhalb: Xt = X, Yt = Y + offset (parallelMollX und parallelMollY bereits definiert)
+        canvas.drawText(labelParallelMinor, parallelMollX, parallelMollY + labelYOffset + labelPaint.getTextSize() / 3, labelPaint);
+
+        // Subdominante von Moll (unterhalb des Lochs, rot)
+        canvas.drawText(labelSubdominantMinor, mollSubdominanteX, mollSubdominanteY + labelYOffset + labelPaint.getTextSize() / 3, labelPaint);
+
+        // Dominante von Moll (unterhalb des Lochs, rot)
+        canvas.drawText(labelDominantMinor, mollDominanteX, mollDominanteY + labelYOffset + labelPaint.getTextSize() / 3, labelPaint);
+
+        canvas.restore();
+    }
+
+    /**
+     * Zeichnet eine Linie zwischen zwei Punkten, aber nur außerhalb der Löcher.
+     * Die Linie beginnt am Rand des ersten Lochs und endet am Rand des zweiten Lochs.
+     */
+    private void drawLineOutsideHoles(Canvas canvas, float x1, float y1, float x2, float y2, Paint paint) {
+        // Vektor von Punkt 1 zu Punkt 2
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float lineLength = (float) Math.sqrt(dx * dx + dy * dy);
+
+        if (lineLength > 0) {
+            // Normierter Richtungsvektor
+            float ndx = dx / lineLength;
+            float ndy = dy / lineLength;
+
+            // Start: Zentrum von Loch 1 + noteCircleRadius in Richtung Loch 2
+            float startX = x1 + ndx * noteCircleRadius;
+            float startY = y1 + ndy * noteCircleRadius;
+
+            // Ende: Zentrum von Loch 2 - noteCircleRadius in Richtung Loch 1
+            float endX = x2 - ndx * noteCircleRadius;
+            float endY = y2 - ndy * noteCircleRadius;
+
+            // Zeichne die Linie
+            canvas.drawLine(startX, startY, endX, endY, paint);
+        }
+    }
+
+    /**
      * Zeichnet einen opaken Rahmen um die Scheiben, um herausragende Texte zu verdecken
      */
     private void drawOpaqueFrame(Canvas canvas) {
@@ -822,7 +997,7 @@ public class ChordDiscView extends View {
             case MotionEvent.ACTION_DOWN:
                 // Prüfe zuerst, ob der zentrale Play-Button getroffen wurde
                 float distanceFromCenter = (float) Math.sqrt(x * x + y * y);
-                float buttonRadius = innerRadius * 4f;
+                float buttonRadius = innerRadius * 4f * 0.95f; // 5% kleiner
 
                 if (distanceFromCenter < buttonRadius) {
                     // Play-Button wurde getroffen - spiele Tonleiter

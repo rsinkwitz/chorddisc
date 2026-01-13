@@ -114,6 +114,12 @@ public class MainActivity extends AppCompatActivity {
             chordDiscView.setTopDiscTransparent(isChecked)
         );
 
+        // Setup Toggle für Harmonien
+        SwitchCompat toggleHarmonies = findViewById(R.id.toggleHarmonies);
+        toggleHarmonies.setOnCheckedChangeListener((buttonView, isChecked) ->
+            chordDiscView.setShowHarmonies(isChecked)
+        );
+
         // Setup Toggle für Sprache
         SwitchCompat toggleLanguage = findViewById(R.id.toggleLanguage);
         toggleLanguage.setChecked(isEnglish); // Setze initialen Zustand
@@ -173,6 +179,9 @@ public class MainActivity extends AppCompatActivity {
 
         TextView transparencyLabel = findViewById(R.id.transparencyLabel);
         transparencyLabel.setText(R.string.toggle_transparency);
+
+        TextView harmoniesLabel = findViewById(R.id.harmoniesLabel);
+        harmoniesLabel.setText(R.string.toggle_harmonies);
 
         TextView languageLabel = findViewById(R.id.languageLabel);
         languageLabel.setText(R.string.toggle_language);

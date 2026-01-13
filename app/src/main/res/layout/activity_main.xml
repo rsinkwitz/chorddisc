@@ -210,6 +210,31 @@
             android:paddingStart="8dp" />
     </LinearLayout>
 
+    <!-- Toggle für Harmonien-Overlay -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:gravity="center_vertical"
+        android:background="@android:color/white">
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/toggleHarmonies"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/harmoniesLabel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/toggle_harmonies"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:paddingStart="8dp" />
+    </LinearLayout>
+
     <!-- Toggle für Sprache -->
     <LinearLayout
         android:layout_width="match_parent"
